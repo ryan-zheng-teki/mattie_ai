@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Square Perpendicular Similarity | Math Visualizations</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <!-- Include Konva and GSAP -->
+  <script src="https://unpkg.com/konva@8.3.2/konva.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.0/gsap.min.js"></script>
 </head>
 <body>
   <header>
@@ -14,57 +17,57 @@
   </header>
   
   <main class="container">
-    <div class="problem-header">
+    <section class="intro">
       <h2>Square Perpendicular Similarity</h2>
-      <p>Explore geometric relationships in a square with perpendicular constructions.</p>
+      <p>Explore geometric relationships in a square with perpendicular constructions to discover similar triangles and ratio properties.</p>
       <a href="/" class="back-link">← Back to All Visualizations</a>
-    </div>
+    </section>
     
     <div class="visualization-container">
+      <!-- Left Panel: Steps -->
       <div id="steps-container">
         <h2>解题步骤</h2>
         <ul id="steps-list">
-          <li data-step="1">
-            <strong><span class="emoji">1️⃣</span> 绘制正方形与中点</strong>
-            <p>正方形ABCD中，点E是BC的中点。</p>
+          <li data-step="1" class="active">
+            <strong>1. 绘制正方形和中点E</strong>
+            <p>我们先绘制正方形ABCD，然后找出BC边的中点E。</p>
           </li>
           <li data-step="2">
-            <strong><span class="emoji">2️⃣</span> 作垂线BG</strong>
-            <p>过点B作BG⊥AE于点G。</p>
+            <strong>2. 作垂线BG</strong>
+            <p>从点B作垂线BG⊥AE，交于点G。这里"⊥"表示两线垂直。</p>
           </li>
           <li data-step="3">
-            <strong><span class="emoji">3️⃣</span> 作垂线CF</strong>
-            <p>过点C作CF⊥BG，交BG的延长线于点H，交AD于点F。</p>
+            <strong>3. 作垂线CF</strong>
+            <p>从点C作垂线CF⊥BG的延长线，交于点H，并延长CF交AD于点F。</p>
           </li>
           <li data-step="4">
-            <strong><span class="emoji">4️⃣</span> 证明三角形相似</strong>
-            <p>证明：△ABG ≅ △BCH。</p>
+            <strong>4. 观察三角形相似性</strong>
+            <p>通过观察可以发现三角形△ABG和三角形△BCH是相似的。我们将证明这一点。</p>
           </li>
           <li data-step="5">
-            <strong><span class="emoji">5️⃣</span> 连接并延长</strong>
-            <p>连接AH，连接EH并延长交CD于点I，证明AB² = AE·BH，求DI/IC的值。</p>
+            <strong>5. 连接AH和EH</strong>
+            <p>连接点A和点H形成线段AH，连接点E和点H并延长，交CD于点I。由此可以证明特殊关系AB² = AE·BH，并求出DI/IC = 2。</p>
           </li>
           <li data-step="interactive" class="interactive">
-            <strong><span class="emoji">🔄</span> 交互模式</strong>
-            <p>启用拖拽正方形顶点进行动态探索。</p>
+            <strong>交互探索</strong>
+            <p>拖动正方形的顶点A、B、C、D来动态观察几何关系如何保持不变。</p>
           </li>
           <li data-step="clear">
-            <strong><span class="emoji">🧹</span> 清空重置</strong>
-            <p>清除画布，准备重新开始。</p>
+            <strong>清空重置</strong>
+            <p>清除画布，重新开始探索。</p>
           </li>
         </ul>
       </div>
-
+      
+      <!-- Right Panel: Canvas -->
       <div id="canvas-container">
         <div id="konva-stage-container" class="konva-container"></div>
       </div>
-      
-      <div id="controls-container">
-        快捷键: <kbd>1</kbd>-<kbd>5</kbd> 步骤 | <kbd>Space</kbd> 交互模式 | <kbd>C</kbd> 清空
-      </div>
     </div>
     
-    <div id="tooltip"></div>
+    <div id="controls-container">
+      快捷键: <kbd>1</kbd>-<kbd>5</kbd> 步骤 | <kbd>空格</kbd> 交互模式 | <kbd>C</kbd> 清空
+    </div>
   </main>
   
   <footer>
@@ -73,16 +76,16 @@
     </div>
   </footer>
 
-  <!-- Include Libraries via CDN -->
-  <script src="https://unpkg.com/konva@9.3.13/konva.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-
-  <!-- Include problem-specific utilities -->
+  <!-- Load utility scripts first -->
   <script src="/js/utils/geometry.js"></script>
   <script src="/js/utils/animation.js"></script>
   
-  <!-- Include the specific problem's code -->
+  <!-- Load problem-specific scripts -->
   <script src="/js/problems/square-perpendicular-similarity/config.js"></script>
+  <script src="/js/problems/square-perpendicular-similarity/utils/geometry-helpers.js"></script>
+  <script src="/js/problems/square-perpendicular-similarity/utils/animation-helpers.js"></script>
+  <script src="/js/problems/square-perpendicular-similarity/interactivity.js"></script>
+  <script src="/js/problems/square-perpendicular-similarity/step-functions.js"></script>
   <script src="/js/problems/square-perpendicular-similarity/index.js"></script>
 </body>
 </html>
