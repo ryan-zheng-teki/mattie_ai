@@ -1,6 +1,6 @@
 /**
  * Square Perpendicular Similarity Visualization
- * 
+ *
  * This visualization demonstrates geometric relationships in a square with
  * perpendicular constructions, proving similarity of triangles and exploring
  * additional properties.
@@ -8,28 +8,41 @@
 
 // --- Global Variables ---
 let stage, layer, backgroundLayer, shadowLayer, gridLayer;
-let elements = {}; // Store Konva objects
-let currentActiveStep = 0;
+let elements = {}; // Store Konva objects: { key: KonvaNode }
+let currentActiveStep = 0; // Track the highest step currently displayed
 let isDraggable = false; // Flag to control draggability of points
+let isAutoModeActive = false; // Flag for auto mode state
+let autoModeTimeoutId = null; // Timeout ID for auto mode step progression
+let currentAutoStep = 0; // Current step index in auto mode
+
+// Mapping of step numbers to the element keys they introduce
+const stepElementKeys = {
+  1: ['squareEdges', 'pointA', 'pointB', 'pointC', 'pointD', 'textA', 'textB', 'textC', 'textD', 'pointE', 'textE'],
+  2: ['lineAE', 'pointG', 'textG', 'lineBG', 'perpSymbolG'],
+  3: ['extendedLineBG', 'pointH', 'textH', 'perpSymbolH', 'lineCF', 'pointF', 'textF'],
+  4: ['triangleABG', 'triangleBCH', 'similarityAnnotation'],
+  5: ['lineAH', 'lineEH', 'extendedLineEH', 'pointI', 'textI', 'proofText1', 'proofText2']
+  // Note: Temporary animation elements (like construction lines) are not listed here as they destroy themselves.
+  // Note: 'stepExplanation' is managed separately.
+};
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
   initKonva();
   initEventListeners();
-  
+
   // Draw the initial state
   gridLayer.draw();
   backgroundLayer.draw();
   layer.draw();
   shadowLayer.draw();
-  
-  // Automatically start with step 1
+
+  // Automatically display step 1 on load after a short delay
   setTimeout(() => {
-    const stepsList = document.getElementById('steps-list');
-    const step1Item = stepsList.querySelector('li[data-step="1"]');
-    if (step1Item) {
-      step1Item.classList.add('active');
-      drawStep1();
+    // Only navigate if auto mode hasn't already started (unlikely here, but good practice)
+    if (!isAutoModeActive) {
+      navigateToStep(1);
+      updateStepUI(1);
     }
   }, 500);
 });
@@ -49,18 +62,14 @@ function initKonva() {
   // Create layers
   layer = new Konva.Layer();
   backgroundLayer = new Konva.Layer();
-  shadowLayer = new Konva.Layer();
+  shadowLayer = new Konva.Layer(); // Consider if this is still needed, maybe merge into 'layer'
   gridLayer = new Konva.Layer();
-  
-  // Add layers to stage
+
+  // Add layers to stage in order
   stage.add(backgroundLayer);
-  stage.add(shadowLayer);
-  stage.add(layer);
-  stage.add(gridLayer);
-  
-  // Move layers to proper order
-  stage.moveToBottom(gridLayer);
-  stage.moveToBottom(backgroundLayer);
+  stage.add(gridLayer); // Grid below main layer
+  stage.add(shadowLayer); // Shadows potentially on top or merged
+  stage.add(layer);      // Main content layer
 
   // Create gradient background
   const backgroundRect = new Konva.Rect({
@@ -72,19 +81,21 @@ function initKonva() {
       start: { x: 0, y: 0 },
       end: { x: stageWidth, y: stageHeight },
       colorStops: [0, config.colors.background[0], 1, config.colors.background[1]]
-    }
+    },
+    listening: false // Background should not capture events
   });
   backgroundLayer.add(backgroundRect);
 
   // Create subtle grid pattern
   const gridSpacing = config.styles.gridSpacing;
-  
+
   // Draw vertical grid lines
   for (let x = gridSpacing; x < stageWidth; x += gridSpacing) {
     const line = new Konva.Line({
       points: [x, 0, x, stageHeight],
       stroke: config.colors.gridLines,
-      strokeWidth: 1
+      strokeWidth: 1,
+      listening: false
     });
     gridLayer.add(line);
   }
@@ -94,243 +105,413 @@ function initKonva() {
     const line = new Konva.Line({
       points: [0, y, stageWidth, y],
       stroke: config.colors.gridLines,
-      strokeWidth: 1
+      strokeWidth: 1,
+      listening: false
     });
     gridLayer.add(line);
   }
-  
+
   // Calculate square size based on stage dimensions
-  // Square should be big enough but leave some margin
   config.squareSize = Math.min(stageWidth, stageHeight) * 0.6;
-  
+
   // Calculate origin to center the square with some margin
   config.origin = {
     x: (stageWidth - config.squareSize) / 2,
     y: (stageHeight + config.squareSize) / 2 // Bottom aligned
   };
-  
-  // Initialize square corners
-  config.pointA = { x: config.origin.x, y: config.origin.y - config.squareSize };
-  config.pointB = { x: config.origin.x + config.squareSize, y: config.origin.y - config.squareSize };
-  config.pointC = { x: config.origin.x + config.squareSize, y: config.origin.y };
-  config.pointD = { x: config.origin.x, y: config.origin.y };
-  
-  // Initialize point E (midpoint of BC)
-  config.pointE = {
-    x: (config.pointB.x + config.pointC.x) / 2,
-    y: (config.pointB.y + config.pointC.y) / 2
-  };
+
+  // Recalculate initial points based on possibly new size/origin
+  calculateInitialPoints();
+}
+
+// Calculate initial points based on config.squareSize and config.origin
+function calculateInitialPoints() {
+    config.pointA = { x: config.origin.x, y: config.origin.y - config.squareSize };
+    config.pointB = { x: config.origin.x + config.squareSize, y: config.origin.y - config.squareSize };
+    config.pointC = { x: config.origin.x + config.squareSize, y: config.origin.y };
+    config.pointD = { x: config.origin.x, y: config.origin.y };
+    config.pointE = midpoint(config.pointB, config.pointC); // Use geometry helper
 }
 
 // Set up event listeners
 function initEventListeners() {
-  // Listen for step list clicks
   const stepsList = document.getElementById('steps-list');
-  const stepItems = stepsList.querySelectorAll('li[data-step]');
+  const autoModeButton = document.getElementById('auto-mode-button');
 
   stepsList.addEventListener('click', (event) => {
     const targetLi = event.target.closest('li');
-    if (!targetLi) return; // Click wasn't on or inside an li
+    if (!targetLi) return;
 
-    const step = targetLi.getAttribute('data-step');
+    const stepAttr = targetLi.getAttribute('data-step');
 
-    // Remove active class from all items
-    stepItems.forEach(item => item.classList.remove('active'));
+    // Any manual interaction should stop auto mode
+    stopAutoMode();
 
-    if (step === 'clear') {
-      clearCanvas();
-      currentActiveStep = 0;
+    if (stepAttr === 'clear') {
+      clearCanvas(); // clearCanvas now also calls stopAutoMode
+      updateStepUI(0); // Deactivate all steps in UI
       console.log("Clear action triggered");
-    } else if (step === 'interactive') {
-      toggleInteractivity();
-      targetLi.classList.add('active');
-    } else if (step) {
-      const stepNum = parseInt(step, 10);
-      console.log(`Clicked Step: ${stepNum}`);
-
-      // Add active class to the clicked item
-      targetLi.classList.add('active');
-      currentActiveStep = stepNum;
-
-      // Execute the corresponding function
-      // Important: We need to handle these as synchronous functions for the UI
-      // while the implementation may be async internally
-      clearCanvas(); // Clear before drawing new step
-      
-      switch (stepNum) {
-        case 1: 
-          drawStep1();
-          break;
-        case 2: 
-          // First redraw step 1 content quickly, then add step 2
-          drawStep1ToStep2();
-          break;
-        case 3: 
-          // Same approach - build up from previous steps quickly
-          drawStep1ToStep3();
-          break;
-        case 4: 
-          drawStep1ToStep4();
-          break;
-        case 5: 
-          drawStep1ToStep5();
-          break;
-        default: 
-          console.warn(`Step ${stepNum} not implemented.`);
+    } else if (stepAttr) {
+      const stepNum = parseInt(stepAttr, 10);
+      if (!isNaN(stepNum)) {
+        console.log(`Navigating to Step: ${stepNum}`);
+        toggleInteractivity(false); // Ensure interactivity is off for specific steps
+        navigateToStep(stepNum);
+        updateStepUI(stepNum);
       }
     }
   });
+
+  // Auto Mode Button Listener
+  if (autoModeButton) {
+    autoModeButton.addEventListener('click', () => {
+      if (isAutoModeActive) {
+        stopAutoMode();
+      } else {
+        startAutoMode();
+      }
+    });
+  } else {
+    console.error("Auto mode button not found!");
+  }
 
   // Add keyboard shortcuts
   document.addEventListener('keydown', (e) => {
     // Numbers 1-5 trigger steps
     if (e.key >= '1' && e.key <= '5') {
-      const stepNum = parseInt(e.key);
-      
-      // Clear canvas before drawing
-      clearCanvas();
-      
-      switch (stepNum) {
-        case 1: drawStep1(); break;
-        case 2: drawStep1ToStep2(); break;
-        case 3: drawStep1ToStep3(); break;
-        case 4: drawStep1ToStep4(); break;
-        case 5: drawStep1ToStep5(); break;
-      }
-      
-      // Update active class in UI
-      stepItems.forEach(item => {
-        if (item.getAttribute('data-step') === e.key) {
-          item.classList.add('active');
-        } else {
-          item.classList.remove('active');
-        }
-      });
-      
-      currentActiveStep = stepNum;
+       e.preventDefault(); // Prevent default browser actions for numbers
+       stopAutoMode(); // Stop auto mode on manual interaction
+       const stepNum = parseInt(e.key);
+       console.log(`Navigating to Step: ${stepNum} (Keyboard)`);
+       toggleInteractivity(false); // Disable interactivity when changing steps
+       navigateToStep(stepNum);
+       updateStepUI(stepNum);
     }
-    
-    // Spacebar to toggle interactivity
-    if (e.key === ' ' || e.code === 'Space') {
-      toggleInteractivity();
-      // Find and activate the interactive step in the UI
-      stepItems.forEach(item => {
-        if (item.getAttribute('data-step') === 'interactive') {
-          item.classList.add('active');
-        } else {
-          item.classList.remove('active');
-        }
-      });
-    }
-    
+
     // 'C' key to clear
     if (e.key === 'c' || e.key === 'C') {
-      clearCanvas();
-      currentActiveStep = 0;
-      stepItems.forEach(item => item.classList.remove('active'));
+       e.preventDefault();
+       stopAutoMode(); // Stop auto mode
+       console.log("Clear action triggered (Keyboard)");
+       clearCanvas();
+       updateStepUI(0); // Deactivate all steps in UI
     }
   });
 
-  // Handle window resize
+  // Debounced resize handler
+  let resizeTimeout;
   window.addEventListener('resize', () => {
-    const stageContainer = document.getElementById('konva-stage-container');
-    const newWidth = stageContainer.clientWidth;
-    const newHeight = stageContainer.clientHeight;
-    
-    // Only resize if significant change occurred
-    if (Math.abs(newWidth - stage.width()) > 50 || Math.abs(newHeight - stage.height()) > 50) {
-      // Update stage dimensions
-      stage.width(newWidth);
-      stage.height(newHeight);
-      
-      // Update background and grid
-      backgroundLayer.findOne('Rect').width(newWidth);
-      backgroundLayer.findOne('Rect').height(newHeight);
-      
-      // Redraw everything
-      backgroundLayer.draw();
-      gridLayer.draw();
-      shadowLayer.draw();
-      layer.draw();
-    }
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+          console.log("Resizing Stage...");
+          stopAutoMode(); // Stop auto mode on resize
+
+          const stageContainer = document.getElementById('konva-stage-container');
+          const newWidth = stageContainer.clientWidth;
+          const newHeight = stageContainer.clientHeight;
+
+          // Update stage dimensions
+          stage.width(newWidth);
+          stage.height(newHeight);
+
+          // Update background gradient and grid lines (assuming they span the stage)
+          backgroundLayer.findOne('Rect').width(newWidth).height(newHeight);
+          // Regenerate grid might be complex, simplest is redraw all
+          gridLayer.destroyChildren();
+          const gridSpacing = config.styles.gridSpacing;
+          for (let x = gridSpacing; x < newWidth; x += gridSpacing) {
+              gridLayer.add(new Konva.Line({ points: [x, 0, x, newHeight], stroke: config.colors.gridLines, strokeWidth: 1, listening: false }));
+          }
+          for (let y = gridSpacing; y < newHeight; y += gridSpacing) {
+              gridLayer.add(new Konva.Line({ points: [0, y, newWidth, y], stroke: config.colors.gridLines, strokeWidth: 1, listening: false }));
+          }
+
+          // Recalculate square size and origin based on new dimensions
+          config.squareSize = Math.min(newWidth, newHeight) * 0.6;
+          config.origin = {
+              x: (newWidth - config.squareSize) / 2,
+              y: (newHeight + config.squareSize) / 2
+          };
+          calculateInitialPoints(); // Recalculate A, B, C, D, E
+
+          // Re-render the current step cleanly after resize
+          const stepToRestore = currentActiveStep;
+          clearCanvas(); // Clear old elements (also stops auto mode)
+          navigateToStep(stepToRestore); // Redraw to the current step with new dimensions
+
+          // Redraw layers
+          backgroundLayer.batchDraw();
+          gridLayer.batchDraw();
+          shadowLayer.batchDraw();
+          layer.batchDraw();
+      }, 250); // Debounce resize event
   });
 }
 
-// Helper functions to handle multi-step progression
-// These functions ensure we show the complete state up to a given step
+// --- Auto Mode Functions ---
 
-function drawStep1ToStep2() {
-  // Draw step 1 with minimal animation
-  drawStep1(false);
+function startAutoMode() {
+  if (isAutoModeActive) return; // Already running
+
+  console.log("Starting Auto Mode...");
   
-  // Then continue with step 2
-  setTimeout(() => {
-    drawStep2(true);
-  }, 300);
+  // Update UI first
+  const autoModeButton = document.getElementById('auto-mode-button');
+  if (autoModeButton) {
+    autoModeButton.textContent = "停止自动演示";
+    autoModeButton.classList.add('stop');
+  }
+
+  // IMPORTANT: Clear canvas without stopping auto mode
+  clearCanvasForAutoMode();
+  
+  // AFTER clearing, enable auto mode
+  isAutoModeActive = true;
+  isDraggable = false;
+  
+  // Start from step 1
+  currentAutoStep = 1;
+  
+  // Begin execution sequence immediately
+  console.log("Auto Mode: Starting execution from step 1");
+  executeAutoStep();
 }
 
-function drawStep1ToStep3() {
-  // Draw steps 1-2 with minimal animation
-  drawStep1(false);
+// New function: Clear canvas without stopping auto mode
+function clearCanvasForAutoMode() {
+  console.log("Clearing canvas for auto mode");
   
-  setTimeout(() => {
-    drawStep2(false);
-    
-    // Then continue with step 3
-    setTimeout(() => {
-      drawStep3(true);
-    }, 300);
-  }, 300);
-}
-
-function drawStep1ToStep4() {
-  // Draw steps 1-3 with minimal animation
-  drawStep1(false);
+  // Stop any running animations
+  gsap.killTweensOf(layer.getChildren());
+  gsap.killTweensOf(shadowLayer.getChildren());
   
-  setTimeout(() => {
-    drawStep2(false);
-    
-    setTimeout(() => {
-      drawStep3(false);
-      
-      // Then continue with step 4
-      setTimeout(() => {
-        drawStep4(true);
-      }, 300);
-    }, 300);
-  }, 300);
-}
-
-function drawStep1ToStep5() {
-  // Draw steps 1-4 with minimal animation
-  drawStep1(false);
+  // Remove all shapes from layers
+  layer.destroyChildren();
+  shadowLayer.destroyChildren();
   
-  setTimeout(() => {
-    drawStep2(false);
-    
-    setTimeout(() => {
-      drawStep3(false);
-      
-      setTimeout(() => {
-        drawStep4(false);
-        
-        // Then continue with step 5
-        setTimeout(() => {
-          drawStep5(true);
-        }, 300);
-      }, 300);
-    }, 300);
-  }, 300);
-}
-
-// Clear canvas function
-function clearCanvas() {
-  gsap.killTweensOf(layer.getChildren()); // Stop any running animations
-  layer.destroyChildren(); // Remove all shapes
-  shadowLayer.destroyChildren(); // Clear shadow layer
-  elements = {}; // Clear references
+  // Clear references and reset counters
+  elements = {};
+  currentActiveStep = 0;
+  
+  // Redraw
   layer.batchDraw();
   shadowLayer.batchDraw();
-  isDraggable = false; // Reset draggable state
-  console.log("Canvas cleared");
+}
+
+function stopAutoMode() {
+  if (!isAutoModeActive) return; // Not running
+
+  console.log("Stopping Auto Mode.");
+  isAutoModeActive = false;
+  
+  // Clear any pending timeouts
+  if (autoModeTimeoutId) {
+    clearTimeout(autoModeTimeoutId);
+    autoModeTimeoutId = null;
+  }
+  currentAutoStep = 0; // Reset step counter
+
+  // Update button state
+  const autoModeButton = document.getElementById('auto-mode-button');
+  if (autoModeButton) {
+    autoModeButton.textContent = "开始自动演示";
+    autoModeButton.classList.remove('stop');
+  }
+}
+
+function executeAutoStep() {
+  // Double-check active state
+  if (!isAutoModeActive) {
+    console.warn("Auto mode was deactivated during execution");
+    return;
+  }
+
+  const totalSteps = 5;
+  if (currentAutoStep > totalSteps) {
+    console.log("Auto Mode finished.");
+    stopAutoMode();
+    return;
+  }
+
+  console.log(`Auto Mode: Executing Step ${currentAutoStep}`);
+  
+  // Draw the current step
+  navigateToStep(currentAutoStep);
+  updateStepUI(currentAutoStep);
+  
+  // Clear any existing timeouts
+  if (autoModeTimeoutId) {
+    clearTimeout(autoModeTimeoutId);
+  }
+  
+  // Schedule the next step with a safety check
+  autoModeTimeoutId = setTimeout(() => {
+    if (isAutoModeActive) { // Check again in case mode was stopped during timeout
+      console.log(`Auto Mode: Advancing to Step ${currentAutoStep + 1}`);
+      currentAutoStep++;
+      executeAutoStep();
+    }
+  }, config.autoModeStepDelay || 2500); // Provide fallback delay value
+}
+
+// Function to navigate visualization to a specific step
+function navigateToStep(targetStep) {
+  // Don't navigate if target is invalid or already there
+  if (targetStep === currentActiveStep && targetStep !== 0) {
+     console.log(`Already at Step ${targetStep}`);
+     return;
+  }
+
+  // Stop any ongoing animations
+  gsap.killTweensOf(layer.getChildren());
+  gsap.killTweensOf(shadowLayer.getChildren());
+
+  // Handle backward navigation: Clear steps from current down to target + 1
+  if (targetStep < currentActiveStep) {
+    console.log(`Moving backward from ${currentActiveStep} to ${targetStep}`);
+    for (let i = currentActiveStep; i > targetStep; i--) {
+      clearElementsForStep(i);
+    }
+  }
+  // Handle forward navigation: Draw steps from current + 1 up to target
+  else if (targetStep > currentActiveStep) {
+    console.log(`Moving forward from ${currentActiveStep} to ${targetStep}`);
+    // Always animate when in auto mode
+    const animateFinalStep = isAutoModeActive || true;
+
+    for (let i = currentActiveStep + 1; i <= targetStep; i++) {
+      const animate = (i === targetStep) && animateFinalStep;
+      console.log(`Drawing Step ${i} (Animate: ${animate})`);
+      
+      // Dynamically call the correct drawStep function
+      const drawFunctionName = `drawStep${i}`;
+      if (typeof window[drawFunctionName] === 'function') {
+         window[drawFunctionName](animate);
+      } else {
+         console.error(`Error: Function ${drawFunctionName} not found.`);
+      }
+    }
+  } else if (targetStep === 0 && currentActiveStep > 0) {
+      // Handle clearing (targetStep 0 from a non-zero state)
+      console.log(`Clearing from Step ${currentActiveStep}`);
+      for (let i = currentActiveStep; i > 0; i--) {
+          clearElementsForStep(i);
+      }
+  }
+
+  // Update the current step tracker
+  currentActiveStep = targetStep;
+
+  // Ensure final state is drawn
+  layer.batchDraw();
+  shadowLayer.batchDraw();
+}
+
+// Clear elements associated with a specific step number
+function clearElementsForStep(stepNum) {
+  if (!stepElementKeys[stepNum]) {
+    console.warn(`No element keys defined for step ${stepNum}`);
+    return;
+  }
+
+  console.log(`Clearing elements for Step ${stepNum}`);
+  const keysToClear = stepElementKeys[stepNum];
+  let clearedCount = 0;
+
+  keysToClear.forEach(key => {
+    if (elements[key]) {
+      // Handle cases where element might be an array (like squareEdges)
+      if (Array.isArray(elements[key])) {
+         elements[key].forEach(el => { if(el && typeof el.destroy === 'function') el.destroy(); });
+      } else if (elements[key] instanceof Konva.Node) {
+         elements[key].destroy(); // Destroy Konva node
+      }
+      delete elements[key]; // Remove reference from our tracker
+      clearedCount++;
+    }
+  });
+
+  // Special handling for step-specific annotations/texts if not in main elements map
+  const stepSpecificElements = {
+      4: ['similarityAnnotation'],
+      5: ['proofText1', 'proofText2'],
+      // Add other step-specific ephemeral elements here if needed
+  };
+
+  if (stepSpecificElements[stepNum]) {
+      stepSpecificElements[stepNum].forEach(key => {
+          if (elements[key]) {
+              if (elements[key] instanceof Konva.Node) elements[key].destroy();
+              delete elements[key];
+              clearedCount++;
+          }
+      });
+  }
+
+  // Also clear the step explanation text if it exists for this step
+  if (elements.stepExplanation) {
+      elements.stepExplanation.destroy();
+      delete elements.stepExplanation;
+      clearedCount++; // Count it if it was present
+  }
+
+  console.log(`Cleared ${clearedCount} element groups/elements for step ${stepNum}.`);
+  // Redraw needed after clearing
+  layer.batchDraw();
+  shadowLayer.batchDraw();
+}
+
+// Update the active state in the step list UI
+function updateStepUI(activeStep) {
+  const stepsList = document.getElementById('steps-list');
+  const stepItems = stepsList.querySelectorAll('li[data-step]');
+
+  stepItems.forEach(item => {
+    const stepAttr = item.getAttribute('data-step');
+    // Use == for string/number comparison flexibility
+    if (stepAttr == activeStep) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+}
+
+// Clear canvas function - Resets everything
+function clearCanvas() {
+  console.log("Clearing canvas completely.");
+  stopAutoMode(); // Ensure auto mode is stopped when clearing
+
+  gsap.killTweensOf(layer.getChildren()); // Stop any running animations
+  gsap.killTweensOf(shadowLayer.getChildren());
+  layer.destroyChildren(); // Remove all shapes from main layer
+  shadowLayer.destroyChildren(); // Clear shadow layer
+  elements = {}; // Clear references
+  currentActiveStep = 0; // Reset step counter
+  
+  // Reset interactivity state
+  isDraggable = false;
+
+  // Clear step explanation explicitly if it wasn't part of 'elements' standard clearing
+  const explanation = layer.findOne('.stepExplanation');
+  if (explanation) explanation.destroy();
+
+  layer.batchDraw();
+  shadowLayer.batchDraw();
+}
+
+// Simplified toggle interactivity that just disables dragging
+function toggleInteractivity(forceState) {
+    stopAutoMode(); // Stop auto mode whenever interactivity is toggled
+
+    // Default to false since we're removing interactive mode
+    isDraggable = false;
+    
+    // Remove dragHelp if it exists
+    if (elements.dragHelp) {
+        elements.dragHelp.destroy();
+        elements.dragHelp = null;
+    }
+
+    layer.batchDraw();
 }

@@ -8,6 +8,35 @@
   <!-- Include Konva and GSAP -->
   <script src="https://unpkg.com/konva@8.3.2/konva.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.0/gsap.min.js"></script>
+  <style>
+    /* Additional styles for auto mode button */
+    .auto-button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      text-align: center;
+      font-size: 16px;
+      margin: 10px 0;
+      cursor: pointer;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+    .auto-button:hover {
+      background-color: #45a049;
+    }
+    .auto-button:active {
+      background-color: #3e8e41;
+    }
+    .auto-button.stop {
+      background-color: #f44336;
+    }
+    .auto-button.stop:hover {
+      background-color: #d32f2f;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -15,18 +44,21 @@
       <h1>Interactive Math Visualizations</h1>
     </div>
   </header>
-  
+
   <main class="container">
     <section class="intro">
       <h2>Square Perpendicular Similarity</h2>
       <p>Explore geometric relationships in a square with perpendicular constructions to discover similar triangles and ratio properties.</p>
       <a href="/" class="back-link">← Back to All Visualizations</a>
     </section>
-    
+
     <div class="visualization-container">
       <!-- Left Panel: Steps -->
       <div id="steps-container">
         <h2>解题步骤</h2>
+        <!-- Moved auto mode button here for better visibility -->
+        <button id="auto-mode-button" class="auto-button">开始自动演示</button>
+        
         <ul id="steps-list">
           <li data-step="1" class="active">
             <strong>1. 绘制正方形和中点E</strong>
@@ -48,28 +80,25 @@
             <strong>5. 连接AH和EH</strong>
             <p>连接点A和点H形成线段AH，连接点E和点H并延长，交CD于点I。由此可以证明特殊关系AB² = AE·BH，并求出DI/IC = 2。</p>
           </li>
-          <li data-step="interactive" class="interactive">
-            <strong>交互探索</strong>
-            <p>拖动正方形的顶点A、B、C、D来动态观察几何关系如何保持不变。</p>
-          </li>
           <li data-step="clear">
             <strong>清空重置</strong>
             <p>清除画布，重新开始探索。</p>
           </li>
         </ul>
       </div>
-      
+
       <!-- Right Panel: Canvas -->
       <div id="canvas-container">
         <div id="konva-stage-container" class="konva-container"></div>
       </div>
     </div>
-    
+
     <div id="controls-container">
-      快捷键: <kbd>1</kbd>-<kbd>5</kbd> 步骤 | <kbd>空格</kbd> 交互模式 | <kbd>C</kbd> 清空
+      快捷键: <kbd>1</kbd>-<kbd>5</kbd> 步骤 | <kbd>C</kbd> 清空
+      <!-- Auto mode button moved to top near steps -->
     </div>
   </main>
-  
+
   <footer>
     <div class="container">
       <p>&copy; 2025 Math Visualizations</p>
@@ -77,15 +106,14 @@
   </footer>
 
   <!-- Load utility scripts first -->
-  <script src="/js/utils/geometry.js"></script>
+  <script src="/js/utils/geometry.js"></script>  <!-- Ensure this is loaded before problem scripts -->
   <script src="/js/utils/animation.js"></script>
-  
+
   <!-- Load problem-specific scripts -->
   <script src="/js/problems/square-perpendicular-similarity/config.js"></script>
-  <script src="/js/problems/square-perpendicular-similarity/utils/geometry-helpers.js"></script>
-  <script src="/js/problems/square-perpendicular-similarity/utils/animation-helpers.js"></script>
+  <script src="/js/problems/square-perpendicular-similarity/utils/animation-helpers.js"></script> <!-- Keep problem-specific animation helpers -->
   <script src="/js/problems/square-perpendicular-similarity/interactivity.js"></script>
   <script src="/js/problems/square-perpendicular-similarity/step-functions.js"></script>
-  <script src="/js/problems/square-perpendicular-similarity/index.js"></script>
+  <script src="/js/problems/square-perpendicular-similarity/index.js"></script> <!-- Load index last as it might initiate things -->
 </body>
 </html>

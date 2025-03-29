@@ -1,1518 +1,571 @@
 /**
  * Step functions for the Square Perpendicular Similarity visualization
+ * These functions draw elements incrementally.
  */
+
+// Helper to check prerequisites and call previous step if needed
+function ensurePrerequisites(requiredStep, currentStepFunction) {
+    if (currentActiveStep < requiredStep) {
+        console.warn(`Prerequisite Step ${requiredStep} not met for ${currentStepFunction}. Drawing prerequisites.`);
+        // Find the function for the required step and call it without animation
+        const prerequisiteFunctionName = `drawStep${requiredStep}`;
+        if (typeof window[prerequisiteFunctionName] === 'function') {
+            window[prerequisiteFunctionName](false); // Draw prerequisite non-animated
+        } else {
+            console.error(`Error: Prerequisite function ${prerequisiteFunctionName} not found.`);
+            return false; // Indicate failure
+        }
+    }
+    // Additionally check if the core elements of the prerequisite step actually exist
+    const prerequisiteKeys = stepElementKeys[requiredStep];
+    if (prerequisiteKeys && prerequisiteKeys.length > 0) {
+        const firstKey = prerequisiteKeys[0]; // Check existence of a key element
+        if (!elements[firstKey]) {
+             console.error(`Error: Prerequisite elements for Step ${requiredStep} seem missing even after drawing.`);
+             // Attempt to draw again? Or throw error? For robustness, let's try drawing again.
+             const prerequisiteFunctionName = `drawStep${requiredStep}`;
+             if (typeof window[prerequisiteFunctionName] === 'function') {
+                 window[prerequisiteFunctionName](false); 
+                 if (!elements[firstKey]) return false; // Failed again
+             } else {
+                 return false;
+             }
+        }
+    }
+    return true; // Prerequisites met
+}
+
 
 // Step 1: Draw square ABCD and midpoint E
 function drawStep1(withAnimation = true) {
-  console.log("Executing Step 1: Drawing square ABCD and midpoint E");
+  // Idempotency Check: If step 1 elements already exist, do nothing.
+  if (elements.pointA && elements.pointE) {
+      console.log("Step 1 elements already exist. Skipping draw.");
+      // Ensure visibility if they were hidden? Generally not needed with this flow.
+      // We might want to re-show the explanation if navigating back to step 1
+      if (withAnimation) {
+        showStepExplanation("步骤1: 绘制正方形ABCD，并找出BC边的中点E", 0.1); // Faster appearance if re-showing
+      }
+      return;
+  }
+  console.log(`Executing Step 1 (Animate: ${withAnimation})`);
   
-  // Get square corners from config
+  // Get square corners from config (ensure they are up-to-date)
+  calculateInitialPoints(); // Recalculate points based on current stage size
   const A = config.pointA;
   const B = config.pointB;
   const C = config.pointC;
   const D = config.pointD;
-  const E = config.pointE; // Midpoint of BC
+  const E = config.pointE; 
   
-  // Show step explanation
   if (withAnimation) {
     showStepExplanation("步骤1: 绘制正方形ABCD，并找出BC边的中点E");
   }
   
-  // Draw the square directly (skipping animation for speed when chaining steps)
-  if (!withAnimation) {
-    // Create the square outline directly
-    const squareLines = new Konva.Line({
-      points: [A.x, A.y, B.x, B.y, C.x, C.y, D.x, D.y, A.x, A.y],
-      stroke: config.colors.square,
-      strokeWidth: config.styles.lineWidth,
-      closed: true
-    });
-    layer.add(squareLines);
-    elements.squareEdges = [squareLines];
-    
-    // Create corner points all at once
-    const pointA = new Konva.Circle({
-      x: A.x,
-      y: A.y,
-      radius: config.styles.pointRadius,
-      fill: config.colors.pointA
-    });
-    
-    const pointB = new Konva.Circle({
-      x: B.x,
-      y: B.y,
-      radius: config.styles.pointRadius,
-      fill: config.colors.pointB
-    });
-    
-    const pointC = new Konva.Circle({
-      x: C.x,
-      y: C.y,
-      radius: config.styles.pointRadius,
-      fill: config.colors.pointC
-    });
-    
-    const pointD = new Konva.Circle({
-      x: D.x,
-      y: D.y,
-      radius: config.styles.pointRadius,
-      fill: config.colors.pointD
-    });
-    
-    // Create labels
-    const textA = new Konva.Text({
-      x: A.x - 20,
-      y: A.y - 20,
-      text: 'A',
-      fontSize: config.styles.labelFontSize,
-      fontStyle: 'bold',
-      fill: config.colors.labels
-    });
-    
-    const textB = new Konva.Text({
-      x: B.x + 10,
-      y: B.y - 20,
-      text: 'B',
-      fontSize: config.styles.labelFontSize,
-      fontStyle: 'bold',
-      fill: config.colors.labels
-    });
-    
-    const textC = new Konva.Text({
-      x: C.x + 10,
-      y: C.y + 10,
-      text: 'C',
-      fontSize: config.styles.labelFontSize,
-      fontStyle: 'bold',
-      fill: config.colors.labels
-    });
-    
-    const textD = new Konva.Text({
-      x: D.x - 20,
-      y: D.y + 10,
-      text: 'D',
-      fontSize: config.styles.labelFontSize,
-      fontStyle: 'bold',
-      fill: config.colors.labels
-    });
-    
-    // Create point E (midpoint of BC)
-    const pointE = new Konva.Circle({
-      x: E.x,
-      y: E.y,
-      radius: config.styles.pointRadius,
-      fill: config.colors.pointE
-    });
-    
-    // Create label for E
-    const textE = new Konva.Text({
-      x: E.x + 10,
-      y: E.y - 20,
-      text: 'E',
-      fontSize: config.styles.labelFontSize,
-      fontStyle: 'bold',
-      fill: config.colors.labels
-    });
-    
-    // Add all elements to layer
-    layer.add(pointA, pointB, pointC, pointD, pointE);
-    layer.add(textA, textB, textC, textD, textE);
-    
-    // Store elements for later reference
-    elements.pointA = pointA;
-    elements.pointB = pointB;
-    elements.pointC = pointC;
-    elements.pointD = pointD;
-    elements.pointE = pointE;
-    elements.textA = textA;
-    elements.textB = textB;
-    elements.textC = textC;
-    elements.textD = textD;
-    elements.textE = textE;
-    
-    layer.batchDraw();
-    return;
-  }
-  
-  // If we want animation, use the original animated approach
-  // Create square edges as separate lines for animation
-  const lineAB = new Konva.Line({
-    points: [A.x, A.y, A.x, A.y],
+  // Create the square outline (simplified - one shape if not animating edge-by-edge)
+  const squareShape = new Konva.Line({
+    points: [A.x, A.y, B.x, B.y, C.x, C.y, D.x, D.y],
     stroke: config.colors.square,
-    strokeWidth: config.styles.lineWidth
+    strokeWidth: config.styles.lineWidth,
+    closed: true,
+    id: 'squareOutline' // Give it an ID for potential easier selection
   });
+  layer.add(squareShape);
+  // Store as a single element for simplicity in clearing, assuming edge animation isn't critical now
+  // If edge animation IS needed, we revert to storing individual lines.
+  elements.squareEdges = [squareShape]; // Keep key name consistent for clearing map
   
-  const lineBC = new Konva.Line({
-    points: [B.x, B.y, B.x, B.y],
-    stroke: config.colors.square,
-    strokeWidth: config.styles.lineWidth
-  });
+  // Create corner points and labels
+  const { point: pointA, text: textA } = createPointWithLabel(A, 'A', config.colors.pointA, -20, -20);
+  const { point: pointB, text: textB } = createPointWithLabel(B, 'B', config.colors.pointB, 10, -20);
+  const { point: pointC, text: textC } = createPointWithLabel(C, 'C', config.colors.pointC, 10, 10);
+  const { point: pointD, text: textD } = createPointWithLabel(D, 'D', config.colors.pointD, -20, 10);
+  const { point: pointE, text: textE } = createPointWithLabel(E, 'E', config.colors.pointE, 10, -20);
   
-  const lineCD = new Konva.Line({
-    points: [C.x, C.y, C.x, C.y],
-    stroke: config.colors.square,
-    strokeWidth: config.styles.lineWidth
-  });
-  
-  const lineDA = new Konva.Line({
-    points: [D.x, D.y, D.x, D.y],
-    stroke: config.colors.square,
-    strokeWidth: config.styles.lineWidth
-  });
-  
-  layer.add(lineAB, lineBC, lineCD, lineDA);
-  elements.squareEdges = [lineAB, lineBC, lineCD, lineDA];
-  
-  // Animate each edge sequentially
-  const edgeDuration = config.animDuration * 0.3;
-  const edgeDelay = edgeDuration * 0.8;
-  
-  // Animate AB
-  gsap.to({}, {
-    duration: edgeDuration,
-    onUpdate: function() {
-      const progress = this.progress();
-      const x = A.x + (B.x - A.x) * progress;
-      const y = A.y + (B.y - A.y) * progress;
-      lineAB.points([A.x, A.y, x, y]);
-      layer.batchDraw();
-    }
-  });
-  
-  // Animate BC
-  gsap.to({}, {
-    duration: edgeDuration,
-    delay: edgeDelay,
-    onUpdate: function() {
-      const progress = this.progress();
-      const x = B.x + (C.x - B.x) * progress;
-      const y = B.y + (C.y - B.y) * progress;
-      lineBC.points([B.x, B.y, x, y]);
-      layer.batchDraw();
-    }
-  });
-  
-  // Animate CD
-  gsap.to({}, {
-    duration: edgeDuration,
-    delay: edgeDelay * 2,
-    onUpdate: function() {
-      const progress = this.progress();
-      const x = C.x + (D.x - C.x) * progress;
-      const y = C.y + (D.y - C.y) * progress;
-      lineCD.points([C.x, C.y, x, y]);
-      layer.batchDraw();
-    }
-  });
-  
-  // Animate DA
-  gsap.to({}, {
-    duration: edgeDuration,
-    delay: edgeDelay * 3,
-    onUpdate: function() {
-      const progress = this.progress();
-      const x = D.x + (A.x - D.x) * progress;
-      const y = D.y + (A.y - D.y) * progress;
-      lineDA.points([D.x, D.y, x, y]);
-      layer.batchDraw();
-    },
-    onComplete: function() {
-      // After square is drawn, show points
-      createCornerPoints();
-    }
-  });
-  
-  // Function to create and animate corner points
-  function createCornerPoints() {
-    // Create points
-    const pointA = new Konva.Circle({
-      x: A.x,
-      y: A.y,
-      radius: config.styles.pointRadius,
-      fill: config.colors.pointA,
-      visible: false,
-      opacity: 0,
-      scale: { x: 0, y: 0 }
-    });
-    
-    const pointB = new Konva.Circle({
-      x: B.x,
-      y: B.y,
-      radius: config.styles.pointRadius,
-      fill: config.colors.pointB,
-      visible: false,
-      opacity: 0,
-      scale: { x: 0, y: 0 }
-    });
-    
-    const pointC = new Konva.Circle({
-      x: C.x,
-      y: C.y,
-      radius: config.styles.pointRadius,
-      fill: config.colors.pointC,
-      visible: false,
-      opacity: 0,
-      scale: { x: 0, y: 0 }
-    });
-    
-    const pointD = new Konva.Circle({
-      x: D.x,
-      y: D.y,
-      radius: config.styles.pointRadius,
-      fill: config.colors.pointD,
-      visible: false,
-      opacity: 0,
-      scale: { x: 0, y: 0 }
-    });
-    
-    // Create labels
-    const textA = new Konva.Text({
-      x: A.x - 20,
-      y: A.y - 20,
-      text: 'A',
-      fontSize: config.styles.labelFontSize,
-      fontStyle: 'bold',
-      fill: config.colors.labels,
-      visible: false,
-      opacity: 0
-    });
-    
-    const textB = new Konva.Text({
-      x: B.x + 10,
-      y: B.y - 20,
-      text: 'B',
-      fontSize: config.styles.labelFontSize,
-      fontStyle: 'bold',
-      fill: config.colors.labels,
-      visible: false,
-      opacity: 0
-    });
-    
-    const textC = new Konva.Text({
-      x: C.x + 10,
-      y: C.y + 10,
-      text: 'C',
-      fontSize: config.styles.labelFontSize,
-      fontStyle: 'bold',
-      fill: config.colors.labels,
-      visible: false,
-      opacity: 0
-    });
-    
-    const textD = new Konva.Text({
-      x: D.x - 20,
-      y: D.y + 10,
-      text: 'D',
-      fontSize: config.styles.labelFontSize,
-      fontStyle: 'bold',
-      fill: config.colors.labels,
-      visible: false,
-      opacity: 0
-    });
-    
-    // Add to layer
-    layer.add(pointA, pointB, pointC, pointD);
-    layer.add(textA, textB, textC, textD);
-    
-    // Store elements
-    elements.pointA = pointA;
-    elements.pointB = pointB;
-    elements.pointC = pointC;
-    elements.pointD = pointD;
-    elements.textA = textA;
-    elements.textB = textB;
-    elements.textC = textC;
-    elements.textD = textD;
-    
-    // Animate point A
-    animatePoint(pointA, textA, 0);
-    
-    // Animate point B
-    animatePoint(pointB, textB, 0.2);
-    
-    // Animate point C
-    animatePoint(pointC, textC, 0.4);
-    
-    // Animate point D
-    animatePoint(pointD, textD, 0.6, function() {
-      // After all corner points are shown, find midpoint E
-      showStepExplanation("找出BC边的中点E");
+  // Store elements
+  elements.pointA = pointA; elements.textA = textA;
+  elements.pointB = pointB; elements.textB = textB;
+  elements.pointC = pointC; elements.textC = textC;
+  elements.pointD = pointD; elements.textD = textD;
+  elements.pointE = pointE; elements.textE = textE;
+
+  if (withAnimation) {
+      // Animate the square appearing (fade in?)
+      squareShape.opacity(0);
+      gsap.to(squareShape, { opacity: 1, duration: config.animDuration * 0.5 });
       
-      // Show midpoint E construction
-      setTimeout(findMidpointE, 500);
-    });
-  }
-  
-  function animatePoint(point, label, delay, onComplete) {
-    point.visible(true);
-    gsap.to(point, {
-      opacity: 1,
-      scaleX: 1,
-      scaleY: 1,
-      duration: config.animDuration * 0.3,
-      delay: delay,
-      ease: "back.out(1.7)",
-      onComplete: function() {
-        label.visible(true);
-        gsap.to(label, {
-          opacity: 1,
-          duration: config.animDuration * 0.2,
-          onComplete: onComplete
-        });
-      }
-    });
-  }
-  
-  function findMidpointE() {
-    // Create a dashed line from B to C
-    const dashedBC = new Konva.Line({
-      points: [B.x, B.y, C.x, C.y],
-      stroke: config.colors.pointE,
-      strokeWidth: 1.5,
-      dash: [5, 5],
-      opacity: 0
-    });
-    layer.add(dashedBC);
-    
-    // Animate dashed line
-    gsap.to(dashedBC, {
-      opacity: 0.7,
-      duration: config.animDuration * 0.3,
-      onComplete: function() {
-        // Show midpoint calculation
-        const pointE = new Konva.Circle({
-          x: E.x,
-          y: E.y,
-          radius: config.styles.pointRadius,
-          fill: config.colors.pointE,
-          visible: false,
-          opacity: 0,
-          scale: { x: 0, y: 0 }
-        });
-        
-        const textE = new Konva.Text({
-          x: E.x + 10,
-          y: E.y - 20,
-          text: 'E',
-          fontSize: config.styles.labelFontSize,
-          fontStyle: 'bold',
-          fill: config.colors.labels,
-          visible: false,
-          opacity: 0
-        });
-        
-        layer.add(pointE, textE);
-        elements.pointE = pointE;
-        elements.textE = textE;
-        
-        // Create highlight effect for midpoint
-        const highlight = new Konva.Circle({
-          x: E.x,
-          y: E.y,
-          radius: 15,
-          fill: config.colors.pointE,
-          opacity: 0.3
-        });
-        layer.add(highlight);
-        
-        // Animate highlight
-        gsap.to(highlight, {
-          radius: 25,
-          opacity: 0,
-          duration: config.animDuration * 0.6,
-          ease: "power2.out",
-          onComplete: function() {
-            highlight.destroy();
-            
-            // Show point E
-            animatePoint(pointE, textE, 0, function() {
-              // Fade out dashed line
-              gsap.to(dashedBC, {
-                opacity: 0,
-                duration: config.animDuration * 0.3,
-                onComplete: function() {
-                  dashedBC.destroy();
-                  
-                  // Final explanation
-                  showStepExplanation("正方形ABCD已绘制完成，E是BC的中点");
-                  layer.batchDraw();
+      // Animate points appearing sequentially
+      const points = [pointA, pointB, pointC, pointD];
+      const texts = [textA, textB, textC, textD];
+      points.forEach((p, i) => {
+          animatePointAppearing(p, texts[i], config.animDuration * 0.3, i * 0.2)
+            .then(() => {
+                // After last point (D), animate midpoint E
+                if (i === points.length - 1) {
+                    // Use the midpoint animation helper if desired, or just simple appear
+                    // For simplicity here, using simple appear:
+                    animatePointAppearing(pointE, textE, config.animDuration * 0.4, 0.1)
+                      .then(() => layer.batchDraw()); 
+                    // If using the complex animation:
+                    // animateMidpointConstruction(B, C, E, config.colors.pointE, config.animDuration * 1.5)
+                    //   .then(() => animatePointAppearing(pointE, textE, config.animDuration * 0.4));
                 }
-              });
             });
-          }
-        });
-      }
-    });
+      });
+  } else {
+      // No animation: just make everything visible
+      squareShape.visible(true);
+      [pointA, pointB, pointC, pointD, pointE, textA, textB, textC, textD, textE].forEach(el => {
+        el.visible(true);
+        el.opacity(1); // Ensure full opacity
+        if (el instanceof Konva.Circle) { // Reset scale if animation sets it
+             el.scaleX(1); el.scaleY(1);
+        }
+      });
+      layer.batchDraw();
   }
-  
-  layer.batchDraw();
 }
 
 // Step 2: Draw line AE and perpendicular BG
 function drawStep2(withAnimation = true) {
-  console.log("Executing Step 2: Drawing perpendicular BG to AE");
+  // Prerequisite check
+  if (!ensurePrerequisites(1, 'drawStep2')) return;
   
-  // Get points from config
+  // Idempotency Check
+  if (elements.lineBG && elements.pointG) {
+      console.log("Step 2 elements already exist. Skipping draw.");
+      if (withAnimation) showStepExplanation("步骤2: 连接AE，然后过点B作垂线BG⊥AE", 0.1);
+      return;
+  }
+  console.log(`Executing Step 2 (Animate: ${withAnimation})`);
+
   const A = config.pointA;
   const B = config.pointB;
   const E = config.pointE;
   
-  // Show step explanation
+  // Calculate G (perpendicular from B to AE) - Should always be calculated
+  const G = perpendicularPointToLine(B, A, E);
+  config.pointG = G; // Update config
+
   if (withAnimation) {
     showStepExplanation("步骤2: 连接AE，然后过点B作垂线BG⊥AE");
   }
-  
-  // Draw line AE
-  if (!withAnimation) {
-    // Create line AE directly
-    const lineAE = new Konva.Line({
-      points: [A.x, A.y, E.x, E.y],
-      stroke: config.colors.lineAE,
-      strokeWidth: config.styles.lineWidth
-    });
-    layer.add(lineAE);
-    elements.lineAE = lineAE;
-    
-    // Calculate G (perpendicular from B to AE)
-    const G = perpendicularPointToLine(B, A, E);
-    config.pointG = G;
-    
-    // Create perpendicular symbol at G
-    const perpSymbolG = new Konva.Line({
-      points: [
-        G.x - 7, G.y - 7,
-        G.x - 7, G.y + 7,
-        G.x + 7, G.y + 7
-      ],
-      stroke: config.colors.labels,
-      strokeWidth: 2
-    });
-    layer.add(perpSymbolG);
-    elements.perpSymbolG = perpSymbolG;
-    
-    // Create line BG
-    const lineBG = new Konva.Line({
-      points: [B.x, B.y, G.x, G.y],
-      stroke: config.colors.lineBG,
-      strokeWidth: config.styles.lineWidth
-    });
-    layer.add(lineBG);
-    elements.lineBG = lineBG;
-    
-    // Create point G
-    const pointG = new Konva.Circle({
-      x: G.x,
-      y: G.y,
-      radius: config.styles.pointRadius,
-      fill: config.colors.pointG
-    });
-    
-    // Create label for G
-    const textG = new Konva.Text({
-      x: G.x + 10,
-      y: G.y - 20,
-      text: 'G',
-      fontSize: config.styles.labelFontSize,
-      fontStyle: 'bold',
-      fill: config.colors.labels
-    });
-    
-    layer.add(pointG, textG);
-    elements.pointG = pointG;
-    elements.textG = textG;
-    
-    layer.batchDraw();
-    return;
-  }
-  
-  // Otherwise, do the animated version
+
   // Create line AE
   const lineAE = new Konva.Line({
-    points: [A.x, A.y, A.x, A.y],
+    points: [A.x, A.y, E.x, E.y],
     stroke: config.colors.lineAE,
-    strokeWidth: config.styles.lineWidth
+    strokeWidth: config.styles.lineWidth,
+    opacity: 0 // Start hidden for animation
   });
   layer.add(lineAE);
   elements.lineAE = lineAE;
-  
-  // Animate drawing line AE
-  gsap.to({}, {
-    duration: config.animDuration * 0.7,
-    onUpdate: function() {
-      const progress = this.progress();
-      const x = A.x + (E.x - A.x) * progress;
-      const y = A.y + (E.y - A.y) * progress;
-      lineAE.points([A.x, A.y, x, y]);
-      layer.batchDraw();
-    },
-    onComplete: function() {
-      // After line AE is drawn, show perpendicular BG
-      setTimeout(function() {
-        showStepExplanation("从点B作垂线BG⊥AE");
-        createPerpendicularBG();
-      }, 500);
-    }
+
+  // Create line BG
+  const lineBG = new Konva.Line({
+    points: [B.x, B.y, G.x, G.y],
+    stroke: config.colors.lineBG,
+    strokeWidth: config.styles.lineWidth,
+    opacity: 0
   });
-  
-  function createPerpendicularBG() {
-    // Calculate G (perpendicular from B to AE)
-    const G = perpendicularPointToLine(B, A, E);
-    config.pointG = G;
-    
-    // Create a temporary visual indicator
-    const constructionCircle = new Konva.Circle({
-      x: B.x,
-      y: B.y,
-      radius: 20,
-      stroke: config.colors.helperLines,
-      strokeWidth: 1,
-      dash: [2, 2],
-      opacity: 0
-    });
-    
-    const constructionLine = new Konva.Line({
-      points: [B.x, B.y, B.x, B.y],
-      stroke: config.colors.lineBG,
-      strokeWidth: 1.5,
-      dash: [5, 5],
-      opacity: 0
-    });
-    
-    layer.add(constructionCircle, constructionLine);
-    
-    // Animate the perpendicular construction
-    gsap.to(constructionCircle, {
-      opacity: 0.4,
-      radius: 30,
-      duration: config.animDuration * 0.3,
-      onComplete: function() {
-        gsap.to(constructionLine, {
-          opacity: 0.7,
-          duration: config.animDuration * 0.2,
-          onComplete: function() {
-            // Animate the line drawing
-            gsap.to({}, {
-              duration: config.animDuration * 0.5,
-              onUpdate: function() {
-                const progress = this.progress();
-                const x = B.x + (G.x - B.x) * progress;
-                const y = B.y + (G.y - B.y) * progress;
-                
-                constructionLine.points([B.x, B.y, x, y]);
-                layer.batchDraw();
-              },
-              onComplete: function() {
-                // Create perpendicular symbol at G
-                const perpSymbolG = new Konva.Line({
-                  points: [
-                    G.x - 7, G.y - 7,
-                    G.x - 7, G.y + 7,
-                    G.x + 7, G.y + 7
-                  ],
-                  stroke: config.colors.labels,
-                  strokeWidth: 2,
-                  opacity: 0
-                });
-                layer.add(perpSymbolG);
-                elements.perpSymbolG = perpSymbolG;
-                
-                // Show perpendicular symbol
-                gsap.to(perpSymbolG, {
-                  opacity: 1,
-                  duration: config.animDuration * 0.3
-                });
-                
-                // Fade out construction elements
-                gsap.to([constructionCircle, constructionLine], {
-                  opacity: 0,
-                  duration: config.animDuration * 0.3,
-                  onComplete: function() {
-                    constructionCircle.destroy();
-                    constructionLine.destroy();
-                    
-                    // Create permanent line BG
-                    const lineBG = new Konva.Line({
-                      points: [B.x, B.y, G.x, G.y],
-                      stroke: config.colors.lineBG,
-                      strokeWidth: config.styles.lineWidth,
-                      opacity: 0
-                    });
-                    layer.add(lineBG);
-                    elements.lineBG = lineBG;
-                    
-                    // Animate the line appearance
-                    gsap.to(lineBG, {
-                      opacity: 1,
-                      duration: config.animDuration * 0.3,
-                      onComplete: function() {
-                        // Create and show point G
-                        const pointG = new Konva.Circle({
-                          x: G.x,
-                          y: G.y,
-                          radius: config.styles.pointRadius,
-                          fill: config.colors.pointG,
-                          visible: false,
-                          opacity: 0,
-                          scale: { x: 0, y: 0 }
-                        });
-                        
-                        const textG = new Konva.Text({
-                          x: G.x + 10,
-                          y: G.y - 20,
-                          text: 'G',
-                          fontSize: config.styles.labelFontSize,
-                          fontStyle: 'bold',
-                          fill: config.colors.labels,
-                          visible: false,
-                          opacity: 0
-                        });
-                        
-                        layer.add(pointG, textG);
-                        elements.pointG = pointG;
-                        elements.textG = textG;
-                        
-                        // Animate point G appearance
-                        pointG.visible(true);
-                        gsap.to(pointG, {
-                          opacity: 1,
-                          scaleX: 1,
-                          scaleY: 1,
-                          duration: config.animDuration * 0.3,
-                          ease: "back.out(1.7)",
-                          onComplete: function() {
-                            textG.visible(true);
-                            gsap.to(textG, {
-                              opacity: 1,
-                              duration: config.animDuration * 0.2,
-                              onComplete: function() {
-                                // Final explanation
-                                showStepExplanation("已从点B作垂线BG⊥AE于点G");
-                                layer.batchDraw();
-                              }
-                            });
-                          }
-                        });
-                      }
-                    });
-                  }
-                });
-              }
-            });
+  layer.add(lineBG);
+  elements.lineBG = lineBG;
+
+  // Create point G and label
+  const { point: pointG, text: textG } = createPointWithLabel(G, 'G', config.colors.pointG);
+  elements.pointG = pointG;
+  elements.textG = textG;
+
+  // Create perpendicular symbol at G
+  const perpSymbolG = drawPerpendicularSymbol(G);
+  elements.perpSymbolG = perpSymbolG;
+
+  if (withAnimation) {
+    // Animate line AE drawing
+    gsap.to(lineAE, { opacity: 1, duration: config.animDuration * 0.4 });
+
+    // Animate perpendicular construction visually then show final elements
+    // Using the helper function for visual flair:
+    animatePerpendicularConstruction(B, A, E, G, config.colors.lineBG, config.animDuration * 1.2)
+      .then(({ perpSymbol }) => {
+          // Construction animation is done, now fade in the actual elements
+          // Note: perpSymbol from animation helper might be temporary. Use elements.perpSymbolG
+          gsap.to(lineBG, { opacity: 1, duration: config.animDuration * 0.3 });
+          animatePointAppearing(elements.pointG, elements.textG, config.animDuration * 0.3);
+          elements.perpSymbolG.visible(true); // Make sure our persistent symbol is visible
+          gsap.to(elements.perpSymbolG, { opacity: 1, duration: config.animDuration * 0.3 });
+          
+          // Destroy the temporary symbol returned by the helper if it exists and is different
+          if (perpSymbol && perpSymbol !== elements.perpSymbolG) {
+              perpSymbol.destroy();
           }
-        });
-      }
-    });
+      });
+
+  } else {
+    // No animation: make elements visible
+    lineAE.opacity(1);
+    lineBG.opacity(1);
+    pointG.visible(true).opacity(1).scaleX(1).scaleY(1);
+    textG.visible(true).opacity(1);
+    perpSymbolG.visible(true).opacity(1);
+    layer.batchDraw();
   }
-  
-  layer.batchDraw();
 }
 
 // Step 3: Draw extended BG and perpendicular CF
 function drawStep3(withAnimation = true) {
-  console.log("Executing Step 3: Drawing perpendicular CF");
-  
-  // Get points from config
+  // Prerequisite check
+  if (!ensurePrerequisites(2, 'drawStep3')) return;
+
+  // Idempotency Check
+  if (elements.lineCF && elements.pointH && elements.pointF) {
+      console.log("Step 3 elements already exist. Skipping draw.");
+       if (withAnimation) showStepExplanation("步骤3: 延长BG，然后从点C作垂线CF⊥BG", 0.1);
+      return;
+  }
+  console.log(`Executing Step 3 (Animate: ${withAnimation})`);
+
   const B = config.pointB;
   const C = config.pointC;
-  const G = config.pointG;
-  const A = config.pointA;
   const D = config.pointD;
-  
-  // Show step explanation
+  const A = config.pointA;
+  // Ensure G is calculated from previous step or config
+  if (!config.pointG) {
+      config.pointG = perpendicularPointToLine(B, A, config.pointE);
+  }
+  const G = config.pointG;
+
+  // Calculate extended line BG endpoint
+  const extendedBG = extendLine(B, G, 3); // Extend further if needed
+  config.extendedBG = extendedBG; // Store in config if needed elsewhere
+
+  // Calculate H (perpendicular from C to line B-G-extendedBG)
+  const H = perpendicularPointToLine(C, B, G); // Perpendicular to the original line BG is sufficient
+  config.pointH = H;
+
+  // Calculate F (intersection of line C-H with line A-D)
+  const F = lineIntersection(C, H, A, D);
+  if (!F) {
+      console.error("Failed to calculate intersection point F in Step 3.");
+      // Provide default or stop? For now, let's place it visually on AD if calculation fails.
+      // This indicates a potential issue in geometry helpers or square definition.
+      // A robust solution would handle parallel lines case in lineIntersection if needed.
+      config.pointF = { x: A.x, y: C.y }; // Place F visually on AD aligned with C as fallback
+  } else {
+      config.pointF = F;
+  }
+  const finalF = config.pointF; // Use the calculated or fallback F
+
   if (withAnimation) {
     showStepExplanation("步骤3: 延长BG，然后从点C作垂线CF⊥BG");
   }
-  
-  // Calculate extended line BG
-  const extendedBG = extendLine(B, G);
-  config.extendedBG = extendedBG;
-  
-  if (!withAnimation) {
-    // Create extended BG line directly
-    const extendedLineBG = new Konva.Line({
+
+  // Create dashed extended BG line
+  const extendedLineBG = new Konva.Line({
       points: [G.x, G.y, extendedBG.x, extendedBG.y],
       stroke: config.colors.lineBG,
-      strokeWidth: config.styles.lineWidth,
-      dash: [5, 5]
-    });
-    layer.add(extendedLineBG);
-    elements.extendedLineBG = extendedLineBG;
-    
-    // Calculate H (perpendicular from C to BG extended)
-    const bgLineStart = B;
-    const bgLineEnd = extendedBG;
-    const H = perpendicularPointToLine(C, bgLineStart, bgLineEnd);
-    config.pointH = H;
-    
-    // Create perpendicular symbol at H
-    const perpSymbolH = new Konva.Line({
-      points: [
-        H.x - 7, H.y - 7,
-        H.x - 7, H.y + 7,
-        H.x + 7, H.y + 7
-      ],
-      stroke: config.colors.labels,
-      strokeWidth: 2
-    });
-    layer.add(perpSymbolH);
-    elements.perpSymbolH = perpSymbolH;
-    
-    // Create point H
-    const pointH = new Konva.Circle({
-      x: H.x,
-      y: H.y,
-      radius: config.styles.pointRadius,
-      fill: config.colors.pointH
-    });
-    
-    // Create label for H
-    const textH = new Konva.Text({
-      x: H.x + 10,
-      y: H.y - 20,
-      text: 'H',
-      fontSize: config.styles.labelFontSize,
-      fontStyle: 'bold',
-      fill: config.colors.labels
-    });
-    
-    layer.add(pointH, textH);
-    elements.pointH = pointH;
-    elements.textH = textH;
-    
-    // Calculate F (intersection of CH with AD)
-    const F = lineIntersection(C, H, A, D);
-    if (F) {
-      config.pointF = F;
-      
-      // Create line CF
-      const lineCF = new Konva.Line({
-        points: [C.x, C.y, F.x, F.y],
-        stroke: config.colors.lineCF,
-        strokeWidth: config.styles.lineWidth
-      });
-      layer.add(lineCF);
-      elements.lineCF = lineCF;
-      
-      // Create point F
-      const pointF = new Konva.Circle({
-        x: F.x,
-        y: F.y,
-        radius: config.styles.pointRadius,
-        fill: config.colors.pointF
-      });
-      
-      // Create label for F
-      const textF = new Konva.Text({
-        x: F.x + 10,
-        y: F.y - 20,
-        text: 'F',
-        fontSize: config.styles.labelFontSize,
-        fontStyle: 'bold',
-        fill: config.colors.labels
-      });
-      
-      layer.add(pointF, textF);
-      elements.pointF = pointF;
-      elements.textF = textF;
-    }
-    
-    layer.batchDraw();
-    return;
-  }
-  
-  // Otherwise, do the animated version
-  // Create extended BG line
-  const extendedLineBG = new Konva.Line({
-    points: [G.x, G.y, G.x, G.y],
-    stroke: config.colors.lineBG,
-    strokeWidth: config.styles.lineWidth,
-    dash: [5, 5],
-    opacity: 0
+      strokeWidth: 1.5, // Thinner for extension
+      dash: [5, 5],
+      opacity: 0
   });
   layer.add(extendedLineBG);
   elements.extendedLineBG = extendedLineBG;
-  
-  // Animate the extension
-  gsap.to(extendedLineBG, {
-    opacity: 1,
-    duration: config.animDuration * 0.5,
-    onUpdate: function() {
-      const progress = this.progress();
-      const x = G.x + (extendedBG.x - G.x) * progress;
-      const y = G.y + (extendedBG.y - G.y) * progress;
-      extendedLineBG.points([G.x, G.y, x, y]);
-      layer.batchDraw();
-    },
-    onComplete: function() {
-      // After extension is drawn, show perpendicular from C
-      setTimeout(function() {
-        showStepExplanation("从点C作垂线CF⊥BG的延长线");
-        createPerpendicularCF();
-      }, 500);
-    }
-  });
-  
-  function createPerpendicularCF() {
-    // Calculate H (perpendicular from C to BG extended)
-    const bgLineStart = B;
-    const bgLineEnd = extendedBG;
-    const H = perpendicularPointToLine(C, bgLineStart, bgLineEnd);
-    config.pointH = H;
-    
-    // Create a temporary visual indicator
-    const constructionCircle = new Konva.Circle({
-      x: C.x,
-      y: C.y,
-      radius: 20,
-      stroke: config.colors.helperLines,
-      strokeWidth: 1,
-      dash: [2, 2],
-      opacity: 0
-    });
-    
-    const constructionLine = new Konva.Line({
-      points: [C.x, C.y, C.x, C.y],
+
+  // Create line CF (will intersect AD at F and BG extension at H)
+  const lineCF = new Konva.Line({
+      points: [C.x, C.y, finalF.x, finalF.y],
       stroke: config.colors.lineCF,
-      strokeWidth: 1.5,
-      dash: [5, 5],
+      strokeWidth: config.styles.lineWidth,
       opacity: 0
-    });
-    
-    layer.add(constructionCircle, constructionLine);
-    
-    // Animate the perpendicular construction
-    gsap.to(constructionCircle, {
-      opacity: 0.4,
-      radius: 30,
-      duration: config.animDuration * 0.3,
-      onComplete: function() {
-        gsap.to(constructionLine, {
-          opacity: 0.7,
-          duration: config.animDuration * 0.2,
-          onComplete: function() {
-            // Animate the line drawing from C to H
-            gsap.to({}, {
-              duration: config.animDuration * 0.5,
-              onUpdate: function() {
-                const progress = this.progress();
-                const x = C.x + (H.x - C.x) * progress;
-                const y = C.y + (H.y - C.y) * progress;
-                
-                constructionLine.points([C.x, C.y, x, y]);
-                layer.batchDraw();
-              },
-              onComplete: function() {
-                // Create perpendicular symbol at H
-                const perpSymbolH = new Konva.Line({
-                  points: [
-                    H.x - 7, H.y - 7,
-                    H.x - 7, H.y + 7,
-                    H.x + 7, H.y + 7
-                  ],
-                  stroke: config.colors.labels,
-                  strokeWidth: 2,
-                  opacity: 0
-                });
-                layer.add(perpSymbolH);
-                elements.perpSymbolH = perpSymbolH;
-                
-                // Show perpendicular symbol
-                gsap.to(perpSymbolH, {
-                  opacity: 1,
-                  duration: config.animDuration * 0.3
-                });
-                
-                // Calculate F (intersection of CH with AD)
-                const F = lineIntersection(C, H, A, D);
-                if (F) {
-                  config.pointF = F;
-                  
-                  // Show point H
-                  const pointH = new Konva.Circle({
-                    x: H.x,
-                    y: H.y,
-                    radius: config.styles.pointRadius,
-                    fill: config.colors.pointH,
-                    visible: false,
-                    opacity: 0,
-                    scale: { x: 0, y: 0 }
-                  });
-                  
-                  const textH = new Konva.Text({
-                    x: H.x + 10,
-                    y: H.y - 20,
-                    text: 'H',
-                    fontSize: config.styles.labelFontSize,
-                    fontStyle: 'bold',
-                    fill: config.colors.labels,
-                    visible: false,
-                    opacity: 0
-                  });
-                  
-                  layer.add(pointH, textH);
-                  elements.pointH = pointH;
-                  elements.textH = textH;
-                  
-                  // Animate point H appearance
-                  pointH.visible(true);
-                  gsap.to(pointH, {
-                    opacity: 1,
-                    scaleX: 1,
-                    scaleY: 1,
-                    duration: config.animDuration * 0.3,
-                    ease: "back.out(1.7)",
-                    onComplete: function() {
-                      textH.visible(true);
-                      gsap.to(textH, {
-                        opacity: 1,
-                        duration: config.animDuration * 0.2,
-                        onComplete: function() {
-                          // Fade out construction elements
-                          gsap.to([constructionCircle, constructionLine], {
-                            opacity: 0,
-                            duration: config.animDuration * 0.3,
-                            onComplete: function() {
-                              constructionCircle.destroy();
-                              constructionLine.destroy();
-                              
-                              // Create line CF
-                              const lineCF = new Konva.Line({
-                                points: [C.x, C.y, F.x, F.y],
-                                stroke: config.colors.lineCF,
-                                strokeWidth: config.styles.lineWidth,
-                                opacity: 0
-                              });
-                              layer.add(lineCF);
-                              elements.lineCF = lineCF;
-                              
-                              // Animate the line appearance
-                              gsap.to(lineCF, {
-                                opacity: 1,
-                                duration: config.animDuration * 0.5,
-                                onComplete: function() {
-                                  // Create and show point F
-                                  const pointF = new Konva.Circle({
-                                    x: F.x,
-                                    y: F.y,
-                                    radius: config.styles.pointRadius,
-                                    fill: config.colors.pointF,
-                                    visible: false,
-                                    opacity: 0,
-                                    scale: { x: 0, y: 0 }
-                                  });
-                                  
-                                  const textF = new Konva.Text({
-                                    x: F.x + 10,
-                                    y: F.y - 20,
-                                    text: 'F',
-                                    fontSize: config.styles.labelFontSize,
-                                    fontStyle: 'bold',
-                                    fill: config.colors.labels,
-                                    visible: false,
-                                    opacity: 0
-                                  });
-                                  
-                                  layer.add(pointF, textF);
-                                  elements.pointF = pointF;
-                                  elements.textF = textF;
-                                  
-                                  // Animate point F appearance
-                                  pointF.visible(true);
-                                  gsap.to(pointF, {
-                                    opacity: 1,
-                                    scaleX: 1,
-                                    scaleY: 1,
-                                    duration: config.animDuration * 0.3,
-                                    ease: "back.out(1.7)",
-                                    onComplete: function() {
-                                      textF.visible(true);
-                                      gsap.to(textF, {
-                                        opacity: 1,
-                                        duration: config.animDuration * 0.2,
-                                        onComplete: function() {
-                                          // Final explanation
-                                          showStepExplanation("已从点C作垂线CF⊥BG，交BG的延长线于点H，交AD于点F");
-                                          layer.batchDraw();
-                                        }
-                                      });
-                                    }
-                                  });
-                                }
-                              });
-                            }
-                          });
-                        }
-                      });
-                    }
-                  });
-                }
-              }
-            });
-          }
-        });
-      }
-    });
+  });
+  layer.add(lineCF);
+  elements.lineCF = lineCF;
+
+  // Create point H and label
+  const { point: pointH, text: textH } = createPointWithLabel(H, 'H', config.colors.pointH);
+  elements.pointH = pointH;
+  elements.textH = textH;
+
+  // Create perpendicular symbol at H
+  const perpSymbolH = drawPerpendicularSymbol(H);
+  elements.perpSymbolH = perpSymbolH;
+
+  // Create point F and label
+  const { point: pointF, text: textF } = createPointWithLabel(finalF, 'F', config.colors.pointF);
+  elements.pointF = pointF;
+  elements.textF = textF;
+
+
+  if (withAnimation) {
+      // Animate extension line appearing
+      gsap.to(extendedLineBG, { opacity: 0.7, duration: config.animDuration * 0.4 });
+
+      // Animate perpendicular construction for CH visually
+      animatePerpendicularConstruction(C, B, G, H, config.colors.lineCF, config.animDuration * 1.2)
+          .then(({ perpSymbol }) => {
+              // Fade in actual elements after construction animation
+              gsap.to(lineCF, { opacity: 1, duration: config.animDuration * 0.5 });
+              animatePointAppearing(elements.pointH, elements.textH, config.animDuration * 0.3, 0);
+              animatePointAppearing(elements.pointF, elements.textF, config.animDuration * 0.3, 0.2); // Slightly delayed
+              
+              elements.perpSymbolH.visible(true);
+              gsap.to(elements.perpSymbolH, { opacity: 1, duration: config.animDuration * 0.3 });
+
+              if (perpSymbol && perpSymbol !== elements.perpSymbolH) perpSymbol.destroy();
+          });
+          
+  } else {
+      // No animation: make elements visible
+      extendedLineBG.opacity(0.7); // Keep dashed line slightly faded
+      lineCF.opacity(1);
+      pointH.visible(true).opacity(1).scaleX(1).scaleY(1);
+      textH.visible(true).opacity(1);
+      perpSymbolH.visible(true).opacity(1);
+      pointF.visible(true).opacity(1).scaleX(1).scaleY(1);
+      textF.visible(true).opacity(1);
+      layer.batchDraw();
   }
-  
-  layer.batchDraw();
 }
 
 // Step 4: Demonstrate triangle similarity
 function drawStep4(withAnimation = true) {
-  console.log("Executing Step 4: Demonstrating triangle similarity");
-  
-  // Get points from config
+  // Prerequisite check
+  if (!ensurePrerequisites(3, 'drawStep4')) return;
+
+  // Idempotency Check
+  if (elements.triangleABG && elements.triangleBCH && elements.similarityAnnotation) {
+      console.log("Step 4 elements already exist. Skipping draw.");
+       if (withAnimation) showStepExplanation("步骤4: 观察三角形△ABG和△BCH的相似性", 0.1);
+      return;
+  }
+  console.log(`Executing Step 4 (Animate: ${withAnimation})`);
+
   const A = config.pointA;
   const B = config.pointB;
   const C = config.pointC;
   const G = config.pointG;
   const H = config.pointH;
-  
-  // Show step explanation
+
+  if (!G || !H) {
+      console.error("Points G or H are missing for Step 4.");
+      return; // Cannot draw triangles
+  }
+
   if (withAnimation) {
     showStepExplanation("步骤4: 观察三角形△ABG和△BCH的相似性");
   }
-  
-  if (!withAnimation) {
-    // Create triangles directly
-    const triangleABG = new Konva.Line({
-      points: [A.x, A.y, B.x, B.y, G.x, G.y, A.x, A.y],
-      closed: true,
-      fill: config.colors.triangleABG,
-      stroke: config.colors.pointA,
-      strokeWidth: 1.5
-    });
-    
-    const triangleBCH = new Konva.Line({
-      points: [B.x, B.y, C.x, C.y, H.x, H.y, B.x, B.y],
-      closed: true,
-      fill: config.colors.triangleBCH,
-      stroke: config.colors.pointC,
-      strokeWidth: 1.5
-    });
-    
-    layer.add(triangleABG, triangleBCH);
-    elements.triangleABG = triangleABG;
-    elements.triangleBCH = triangleBCH;
-    
-    // Create similarity annotation
-    const similarityAnnotation = new Konva.Text({
-      x: stage.width() / 2,
-      y: 40,
-      text: '△ABG ≅ △BCH (相似三角形)',
-      fontSize: 18,
-      fontStyle: 'bold',
-      fill: '#333',
-      padding: 8,
-      background: 'rgba(255, 255, 255, 0.8)',
-      cornerRadius: 5
-    });
-    similarityAnnotation.offsetX(similarityAnnotation.width() / 2);
-    
-    layer.add(similarityAnnotation);
-    elements.similarityAnnotation = similarityAnnotation;
-    
-    layer.batchDraw();
-    return;
-  }
-  
-  // Otherwise, do the animated version
-  // Create and animate triangle ABG
+
+  // Create triangle ABG using Konva.Line with closed property
   const triangleABG = new Konva.Line({
-    points: [A.x, A.y, B.x, B.y, G.x, G.y, A.x, A.y],
-    closed: true,
+    points: [A.x, A.y, B.x, B.y, G.x, G.y],
     fill: config.colors.triangleABG,
     stroke: config.colors.pointA,
     strokeWidth: 1.5,
+    closed: true,
     opacity: 0
   });
-  
   layer.add(triangleABG);
   elements.triangleABG = triangleABG;
-  
-  gsap.to(triangleABG, {
-    opacity: 1,
-    duration: config.animDuration * 0.8,
-    ease: "power2.inOut",
-    onComplete: function() {
-      // After first triangle is shown, show the second one
-      setTimeout(function() {
-        const triangleBCH = new Konva.Line({
-          points: [B.x, B.y, C.x, C.y, H.x, H.y, B.x, B.y],
-          closed: true,
-          fill: config.colors.triangleBCH,
-          stroke: config.colors.pointC,
-          strokeWidth: 1.5,
-          opacity: 0
-        });
-        
-        layer.add(triangleBCH);
-        elements.triangleBCH = triangleBCH;
-        
-        gsap.to(triangleBCH, {
-          opacity: 1,
-          duration: config.animDuration * 0.8,
-          ease: "power2.inOut",
-          onComplete: function() {
-            // After both triangles are shown, show similarity annotation
-            setTimeout(function() {
-              const similarityAnnotation = new Konva.Text({
-                x: stage.width() / 2,
-                y: 40,
-                text: '△ABG ≅ △BCH (相似三角形)',
-                fontSize: 18,
-                fontStyle: 'bold',
-                fill: '#333',
-                padding: 8,
-                background: 'rgba(255, 255, 255, 0.8)',
-                cornerRadius: 5,
-                shadowColor: 'black',
-                shadowBlur: 4,
-                shadowOffset: { x: 1, y: 1 },
-                shadowOpacity: 0.2,
-                opacity: 0
-              });
-              similarityAnnotation.offsetX(similarityAnnotation.width() / 2);
-              
-              layer.add(similarityAnnotation);
-              elements.similarityAnnotation = similarityAnnotation;
-              
-              gsap.to(similarityAnnotation, {
-                opacity: 1,
-                y: similarityAnnotation.y() - 10,
-                duration: config.animDuration * 0.5,
-                ease: "power2.out",
-                onComplete: function() {
-                  // Pulse animation for triangles
-                  [triangleABG, triangleBCH].forEach(triangle => {
-                    gsap.to(triangle, {
-                      strokeWidth: 3,
-                      duration: 0.5,
-                      repeat: 3,
-                      yoyo: true,
-                      ease: "sine.inOut",
-                      delay: 0.3
-                    });
-                  });
-                  
-                  // Final explanation
-                  showStepExplanation("三角形△ABG和△BCH是相似的，因为它们都有一个直角，并且共享角B");
-                  layer.batchDraw();
-                }
-              });
-            }, 500);
-          }
-        });
-      }, 500);
-    }
+
+  // Create triangle BCH using Konva.Line with closed property
+  const triangleBCH = new Konva.Line({
+    points: [B.x, B.y, C.x, C.y, H.x, H.y],
+    fill: config.colors.triangleBCH,
+    stroke: config.colors.pointC,
+    strokeWidth: 1.5,
+    closed: true,
+    opacity: 0
   });
+  layer.add(triangleBCH);
+  elements.triangleBCH = triangleBCH;
   
-  layer.batchDraw();
+  // Similarity Annotation
+  const annotationPos = { x: stage.width() / 2, y: 50 };
+
+  if (withAnimation) {
+    // Animate triangles appearing (fade in fill)
+    gsap.to(triangleABG, { opacity: 1, duration: config.animDuration * 0.6, delay: 0.1 });
+    gsap.to(triangleBCH, { opacity: 1, duration: config.animDuration * 0.6, delay: 0.3 });
+
+    // Show annotation after triangles
+    showMathAnnotation('△ABG ≅ △BCH', annotationPos, config.animDuration * 0.5, 0.8)
+      .then(annotation => {
+          elements.similarityAnnotation = annotation;
+          
+          // FIXED: Instead of infinite pulse, do a brief highlight effect
+          // First triangle: Scale up and down once with a bright highlight
+          gsap.timeline()
+            .to(triangleABG, { 
+                scaleX: 1.05, 
+                scaleY: 1.05, 
+                strokeWidth: 2.5, 
+                duration: 0.5, 
+                ease: "sine.inOut",
+                transformOrigin: "center center" 
+            })
+            .to(triangleABG, { 
+                scaleX: 1, 
+                scaleY: 1, 
+                strokeWidth: 1.5, 
+                duration: 0.5, 
+                ease: "sine.out",
+                transformOrigin: "center center" 
+            });
+            
+          // Second triangle: Scale up and down once with a bright highlight, slightly delayed
+          gsap.timeline()
+            .to(triangleBCH, { 
+                scaleX: 1.05, 
+                scaleY: 1.05, 
+                strokeWidth: 2.5, 
+                duration: 0.5, 
+                delay: 0.2, 
+                ease: "sine.inOut",
+                transformOrigin: "center center" 
+            })
+            .to(triangleBCH, { 
+                scaleX: 1, 
+                scaleY: 1, 
+                strokeWidth: 1.5, 
+                duration: 0.5, 
+                ease: "sine.out",
+                transformOrigin: "center center" 
+            });
+            
+          layer.batchDraw();
+      });
+  } else {
+    // No animation: make elements visible
+    triangleABG.opacity(1);
+    triangleBCH.opacity(1);
+    // Create annotation directly
+    showMathAnnotation('△ABG ≅ △BCH', annotationPos, 0, 0)
+        .then(annotation => {
+            elements.similarityAnnotation = annotation;
+            layer.batchDraw();
+        });
+  }
 }
 
 // Step 5: Connect AH and EH, extend to I
 function drawStep5(withAnimation = true) {
-  console.log("Executing Step 5: Connecting AH and EH");
-  
-  // Get points from config
+  // Prerequisite check
+  if (!ensurePrerequisites(4, 'drawStep5')) return; // Depends on H from step 3, but easier to check step 4 done
+
+  // Idempotency Check
+  if (elements.lineAH && elements.pointI && elements.proofText1) {
+      console.log("Step 5 elements already exist. Skipping draw.");
+      if (withAnimation) showStepExplanation("步骤5: 连接AH和EH，延长交CD于I，展示证明", 0.1);
+      return;
+  }
+  console.log(`Executing Step 5 (Animate: ${withAnimation})`);
+
   const A = config.pointA;
   const E = config.pointE;
   const H = config.pointH;
   const C = config.pointC;
   const D = config.pointD;
+  const B = config.pointB; // Needed for proof text potentially
+
+  if (!H) {
+      console.error("Point H is missing for Step 5.");
+      return;
+  }
+
+  // Calculate I (intersection of EH extended with CD)
+  // Extend E->H significantly to ensure intersection with segment CD
+  const extendedEH = extendLine(E, H, 10); 
+  const I = lineIntersection(E, extendedEH, C, D);
   
-  // Show step explanation
+  if (!I || I.y < D.y || I.y > C.y || I.x < D.x || I.x > C.x) { // Check if intersection I is actually on segment CD (more robust check)
+      console.warn("Intersection I is not on segment CD. Geometry might be distorted or calculation issue.");
+      // Fallback: Use the theoretical property DI/IC = 2.
+      // Vector DC = C - D
+      const vecDC = { x: C.x - D.x, y: C.y - D.y };
+      // If DI/IC = 2, then DI = 2 * IC. Total length DC = DI + IC = 3 * IC. So IC = DC/3.
+      // Point I = D + DI = D + 2 * IC = D + (2/3) * DC 
+      // OR Point I = C - IC = C - (1/3) * DC
+      const calculatedI = {
+          x: C.x - vecDC.x / 3,
+          y: C.y - vecDC.y / 3 
+      };
+      config.pointI = calculatedI;
+      console.log("Using calculated I based on expected DI/IC = 2 ratio.");
+  } else {
+       config.pointI = I; // Use the intersection if valid
+  }
+  const finalI = config.pointI;
+
+
   if (withAnimation) {
-    showStepExplanation("步骤5: 连接AH和EH，并延长交CD于点I");
+    showStepExplanation("步骤5: 连接AH和EH，延长交CD于I，展示证明");
   }
-  
-  if (!withAnimation) {
-    // Create lines directly
-    const lineAH = new Konva.Line({
-      points: [A.x, A.y, H.x, H.y],
-      stroke: config.colors.lineAH,
-      strokeWidth: config.styles.lineWidth
-    });
-    
-    const lineEH = new Konva.Line({
-      points: [E.x, E.y, H.x, H.y],
-      stroke: config.colors.lineEH,
-      strokeWidth: config.styles.lineWidth
-    });
-    
-    layer.add(lineAH, lineEH);
-    elements.lineAH = lineAH;
-    elements.lineEH = lineEH;
-    
-    // Calculate I (intersection of EH extended with CD)
-    const extendedEH = extendLine(E, H);
-    const I = lineIntersection(E, extendedEH, C, D);
-    
-    if (I) {
-      config.pointI = I;
-      
-      // Create extended line
-      const extendedLineEH = new Konva.Line({
-        points: [H.x, H.y, I.x, I.y],
-        stroke: config.colors.lineEH,
-        strokeWidth: config.styles.lineWidth,
-        dash: [5, 5]
-      });
-      
-      layer.add(extendedLineEH);
-      elements.extendedLineEH = extendedLineEH;
-      
-      // Create point I
-      const pointI = new Konva.Circle({
-        x: I.x,
-        y: I.y,
-        radius: config.styles.pointRadius,
-        fill: config.colors.pointI
-      });
-      
-      const textI = new Konva.Text({
-        x: I.x + 10,
-        y: I.y - 20,
-        text: 'I',
-        fontSize: config.styles.labelFontSize,
-        fontStyle: 'bold',
-        fill: config.colors.labels
-      });
-      
-      layer.add(pointI, textI);
-      elements.pointI = pointI;
-      elements.textI = textI;
-      
-      // Create proof annotations
-      const proofText1 = new Konva.Text({
-        x: stage.width() / 2,
-        y: 40,
-        text: 'AB² = AE · BH',
-        fontSize: 18,
-        fontStyle: 'bold',
-        fill: '#333',
-        padding: 8,
-        background: 'rgba(255, 255, 255, 0.8)',
-        cornerRadius: 5
-      });
-      proofText1.offsetX(proofText1.width() / 2);
-      
-      const proofText2 = new Konva.Text({
-        x: stage.width() / 2,
-        y: 80,
-        text: 'DI / IC = 2',
-        fontSize: 18,
-        fontStyle: 'bold',
-        fill: '#333',
-        padding: 8,
-        background: 'rgba(255, 255, 255, 0.8)',
-        cornerRadius: 5
-      });
-      proofText2.offsetX(proofText2.width() / 2);
-      
-      layer.add(proofText1, proofText2);
-      elements.proofText1 = proofText1;
-      elements.proofText2 = proofText2;
-    }
-    
-    layer.batchDraw();
-    return;
-  }
-  
-  // Otherwise, do the animated version
-  // Create and animate line AH
+
+  // Create line AH
   const lineAH = new Konva.Line({
-    points: [A.x, A.y, A.x, A.y],
+    points: [A.x, A.y, H.x, H.y],
     stroke: config.colors.lineAH,
-    strokeWidth: config.styles.lineWidth
+    strokeWidth: config.styles.lineWidth,
+    opacity: 0
   });
   layer.add(lineAH);
   elements.lineAH = lineAH;
-  
-  gsap.to({}, {
-    duration: config.animDuration * 0.7,
-    onUpdate: function() {
-      const progress = this.progress();
-      const x = A.x + (H.x - A.x) * progress;
-      const y = A.y + (H.y - A.y) * progress;
-      lineAH.points([A.x, A.y, x, y]);
-      layer.batchDraw();
-    },
-    onComplete: function() {
-      // After line AH is drawn, draw line EH
-      setTimeout(function() {
-        const lineEH = new Konva.Line({
-          points: [E.x, E.y, E.x, E.y],
-          stroke: config.colors.lineEH,
-          strokeWidth: config.styles.lineWidth
-        });
-        layer.add(lineEH);
-        elements.lineEH = lineEH;
-        
-        gsap.to({}, {
-          duration: config.animDuration * 0.7,
-          onUpdate: function() {
-            const progress = this.progress();
-            const x = E.x + (H.x - E.x) * progress;
-            const y = E.y + (H.y - E.y) * progress;
-            lineEH.points([E.x, E.y, x, y]);
-            layer.batchDraw();
-          },
-          onComplete: function() {
-            // After line EH is drawn, show extension to I
-            setTimeout(function() {
-              showStepExplanation("延长EH交CD于点I");
-              
-              // Calculate I (intersection of EH extended with CD)
-              const extendedEH = extendLine(E, H);
-              const I = lineIntersection(E, extendedEH, C, D);
-              
-              if (I) {
-                config.pointI = I;
-                
-                // Create and animate extended line
-                const extendedLineEH = new Konva.Line({
-                  points: [H.x, H.y, H.x, H.y],
-                  stroke: config.colors.lineEH,
-                  strokeWidth: config.styles.lineWidth,
-                  dash: [5, 5],
-                  opacity: 0
-                });
-                layer.add(extendedLineEH);
-                elements.extendedLineEH = extendedLineEH;
-                
-                gsap.to(extendedLineEH, {
-                  opacity: 1,
-                  duration: config.animDuration * 0.3,
-                  onUpdate: function() {
-                    const progress = this.progress();
-                    const x = H.x + (I.x - H.x) * progress;
-                    const y = H.y + (I.y - H.y) * progress;
-                    extendedLineEH.points([H.x, H.y, x, y]);
-                    layer.batchDraw();
-                  },
-                  onComplete: function() {
-                    // After extension is drawn, show point I
-                    const pointI = new Konva.Circle({
-                      x: I.x,
-                      y: I.y,
-                      radius: config.styles.pointRadius,
-                      fill: config.colors.pointI,
-                      visible: false,
-                      opacity: 0,
-                      scale: { x: 0, y: 0 }
-                    });
-                    
-                    const textI = new Konva.Text({
-                      x: I.x + 10,
-                      y: I.y - 20,
-                      text: 'I',
-                      fontSize: config.styles.labelFontSize,
-                      fontStyle: 'bold',
-                      fill: config.colors.labels,
-                      visible: false,
-                      opacity: 0
-                    });
-                    
-                    layer.add(pointI, textI);
-                    elements.pointI = pointI;
-                    elements.textI = textI;
-                    
-                    // Animate point I appearance
-                    pointI.visible(true);
-                    gsap.to(pointI, {
-                      opacity: 1,
-                      scaleX: 1,
-                      scaleY: 1,
-                      duration: config.animDuration * 0.3,
-                      ease: "back.out(1.7)",
-                      onComplete: function() {
-                        textI.visible(true);
-                        gsap.to(textI, {
-                          opacity: 1,
-                          duration: config.animDuration * 0.2,
-                          onComplete: function() {
-                            // Show proof annotations
-                            setTimeout(function() {
-                              // Create and animate first proof text
-                              const proofText1 = new Konva.Text({
-                                x: stage.width() / 2,
-                                y: 40,
-                                text: 'AB² = AE · BH',
-                                fontSize: 18,
-                                fontStyle: 'bold',
-                                fill: '#333',
-                                padding: 8,
-                                background: 'rgba(255, 255, 255, 0.8)',
-                                cornerRadius: 5,
-                                shadowColor: 'black',
-                                shadowBlur: 4,
-                                shadowOffset: { x: 1, y: 1 },
-                                shadowOpacity: 0.2,
-                                opacity: 0
-                              });
-                              proofText1.offsetX(proofText1.width() / 2);
-                              
-                              layer.add(proofText1);
-                              elements.proofText1 = proofText1;
-                              
-                              gsap.to(proofText1, {
-                                opacity: 1,
-                                y: proofText1.y() - 10,
-                                duration: config.animDuration * 0.5,
-                                ease: "power2.out",
-                                onComplete: function() {
-                                  // Create and animate second proof text
-                                  setTimeout(function() {
-                                    const proofText2 = new Konva.Text({
-                                      x: stage.width() / 2,
-                                      y: 80,
-                                      text: 'DI / IC = 2',
-                                      fontSize: 18,
-                                      fontStyle: 'bold',
-                                      fill: '#333',
-                                      padding: 8,
-                                      background: 'rgba(255, 255, 255, 0.8)',
-                                      cornerRadius: 5,
-                                      shadowColor: 'black',
-                                      shadowBlur: 4,
-                                      shadowOffset: { x: 1, y: 1 },
-                                      shadowOpacity: 0.2,
-                                      opacity: 0
-                                    });
-                                    proofText2.offsetX(proofText2.width() / 2);
-                                    
-                                    layer.add(proofText2);
-                                    elements.proofText2 = proofText2;
-                                    
-                                    gsap.to(proofText2, {
-                                      opacity: 1,
-                                      y: proofText2.y() - 10,
-                                      duration: config.animDuration * 0.5,
-                                      ease: "power2.out",
-                                      onComplete: function() {
-                                        // Final explanation
-                                        showStepExplanation("已连接AH，EH并延长交CD于点I，证明了AB² = AE·BH，以及DI/IC = 2");
-                                        layer.batchDraw();
-                                      }
-                                    });
-                                  }, 500);
-                                }
-                              });
-                            }, 500);
-                          }
-                        });
-                      }
-                    });
-                  }
-                });
-              }
-            }, 500);
-          }
-        });
-      }, 500);
-    }
+
+  // Create line EH
+  const lineEH = new Konva.Line({
+    points: [E.x, E.y, H.x, H.y],
+    stroke: config.colors.lineEH,
+    strokeWidth: config.styles.lineWidth,
+    opacity: 0
   });
-  
-  layer.batchDraw();
+  layer.add(lineEH);
+  elements.lineEH = lineEH;
+
+  // Create dashed extended line from H to I
+  const extendedLineEH = new Konva.Line({
+      points: [H.x, H.y, finalI.x, finalI.y],
+      stroke: config.colors.lineEH,
+      strokeWidth: 1.5,
+      dash: [5, 5],
+      opacity: 0
+  });
+  layer.add(extendedLineEH);
+  elements.extendedLineEH = extendedLineEH;
+
+  // Create point I and label
+  const { point: pointI, text: textI } = createPointWithLabel(finalI, 'I', config.colors.pointI);
+  elements.pointI = pointI;
+  elements.textI = textI;
+
+  // Proof annotations positions
+  const proofPos1 = { x: stage.width() / 2, y: 50 };
+  const proofPos2 = { x: stage.width() / 2, y: 90 };
+
+  if (withAnimation) {
+      // Animate lines AH and EH appearing
+      gsap.to(lineAH, { opacity: 1, duration: config.animDuration * 0.5 });
+      gsap.to(lineEH, { opacity: 1, duration: config.animDuration * 0.5, delay: 0.2 });
+      
+      // Animate extension and point I appearing after a delay
+      gsap.to(extendedLineEH, { opacity: 0.7, duration: config.animDuration * 0.4, delay: 0.5 });
+      animatePointAppearing(pointI, textI, config.animDuration * 0.4, 0.7);
+
+      // Show proofs after everything else is drawn
+      showMathAnnotation('AB² = AE · BH', proofPos1, config.animDuration * 0.5, 1.2)
+          .then(p1 => { elements.proofText1 = p1; });
+      showMathAnnotation('DI / IC = 2', proofPos2, config.animDuration * 0.5, 1.4)
+          .then(p2 => { elements.proofText2 = p2; layer.batchDraw(); });
+          
+  } else {
+      // No animation: make elements visible
+      lineAH.opacity(1);
+      lineEH.opacity(1);
+      extendedLineEH.opacity(0.7);
+      pointI.visible(true).opacity(1).scaleX(1).scaleY(1);
+      textI.visible(true).opacity(1);
+      
+      // Create annotations directly
+      showMathAnnotation('AB² = AE · BH', proofPos1, 0, 0).then(p1 => { elements.proofText1 = p1; });
+      showMathAnnotation('DI / IC = 2', proofPos2, 0, 0).then(p2 => { elements.proofText2 = p2; layer.batchDraw(); });
+  }
 }

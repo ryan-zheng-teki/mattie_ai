@@ -14,7 +14,7 @@ const config = {
   pointG: { x: 0, y: 0 },
   pointH: { x: 0, y: 0 },
   pointI: { x: 0, y: 0 },
-  
+
   // Colors
   colors: {
     square: '#333',
@@ -32,14 +32,15 @@ const config = {
     lineCF: '#f44336', // Red
     lineEH: '#009688', // Teal
     lineAH: '#cddc39', // Lime
-    triangleABG: 'rgba(233, 30, 99, 0.2)', // Light Pink
-    triangleBCH: 'rgba(0, 150, 136, 0.2)', // Light Teal
+    // Increased opacity for triangle fills for better visibility
+    triangleABG: 'rgba(233, 30, 99, 0.4)', // Light Pink (40% opacity)
+    triangleBCH: 'rgba(0, 150, 136, 0.4)', // Light Teal (40% opacity)
     labels: '#555',
     helperLines: '#aaa',
     gridLines: '#e0e0e0',
     background: ['#f9f9ff', '#eef5ff']
   },
-  
+
   // Enhanced styling properties
   styles: {
     pointShadowBlur: 10,
@@ -50,10 +51,11 @@ const config = {
     labelFontSize: 18,
     gridSpacing: 20
   },
-  
+
   // Animation settings
   animDuration: 0.8, // Duration for drawing animations (in seconds)
-  
+  autoModeStepDelay: 2500, // Delay between auto mode steps in milliseconds (e.g., 2.5 seconds)
+
   // Enhanced easing options
   easing: {
     draw: "power2.out",
