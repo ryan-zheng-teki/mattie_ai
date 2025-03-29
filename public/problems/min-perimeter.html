@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minimum Perimeter Triangle | Math Visualizations</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Interactive Math Visualizations</h1>
+    </div>
+  </header>
+  
+  <main class="container">
+    <div class="problem-header">
+      <h2>Minimum Perimeter Triangle</h2>
+      <p>Discover how to find the triangle with minimum perimeter using reflections.</p>
+      <a href="/" class="back-link">← Back to All Visualizations</a>
+    </div>
+    
+    <div class="visualization-container">
+      <div id="steps-container">
+        <h2>解题步骤</h2>
+        <ul id="steps-list">
+          <li data-step="1">
+            <strong><span class="emoji">1️⃣</span> 绘制初始图形</strong>
+            <p>画出角 ∠AOB 和内部点 P。</p>
+          </li>
+          <li data-step="2">
+            <strong><span class="emoji">2️⃣</span> 作对称点 P'</strong>
+            <p>作出点 P 关于直线 OA 的对称点 P'。</p>
+          </li>
+          <li data-step="3">
+            <strong><span class="emoji">3️⃣</span> 作对称点 P''</strong>
+            <p>作出点 P 关于直线 OB 的对称点 P''。</p>
+          </li>
+          <li data-step="4">
+            <strong><span class="emoji">4️⃣</span> 连接 P'P'' 找 C, D</strong>
+            <p>连接 P' 和 P''，与 OA, OB 的交点即为 C, D。</p>
+          </li>
+          <li data-step="5">
+            <strong><span class="emoji">5️⃣</span> 最小周长三角形</strong>
+            <p>连接 P, C, D 得到周长最小的三角形 △PCD。</p>
+          </li>
+          <li data-step="interactive" class="interactive">
+            <strong><span class="emoji">🔄</span> 交互模式</strong>
+            <p>启用拖拽点 P 进行动态探索。</p>
+          </li>
+          <li data-step="clear">
+            <strong><span class="emoji">🧹</span> 清空重置</strong>
+            <p>清除画布，准备重新开始。</p>
+          </li>
+        </ul>
+      </div>
+
+      <div id="canvas-container">
+        <div id="konva-stage-container" class="konva-container"></div>
+      </div>
+      
+      <div id="controls-container">
+        快捷键: <kbd>1</kbd>-<kbd>5</kbd> 步骤 | <kbd>Space</kbd> 交互模式 | <kbd>C</kbd> 清空
+      </div>
+    </div>
+    
+    <div id="tooltip"></div>
+  </main>
+  
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 Math Visualizations</p>
+    </div>
+  </footer>
+
+  <!-- Include Libraries via CDN -->
+  <script src="https://unpkg.com/konva@9.3.13/konva.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <!-- Include problem-specific utilities -->
+  <script src="/js/utils/geometry.js"></script>
+  <script src="/js/utils/animation.js"></script>
+  
+  <!-- Include the specific problem's code -->
+  <script src="/js/problems/min-perimeter/config.js"></script>
+  <script src="/js/problems/min-perimeter/index.js"></script>
+</body>
+</html>

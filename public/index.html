@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Visualizations</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Interactive Math Visualizations</h1>
+    </div>
+  </header>
+  
+  <main class="container">
+    <section class="intro">
+      <h2>Explore Mathematical Concepts Visually</h2>
+      <p>Select a visualization to interact with mathematical concepts in an intuitive way.</p>
+    </section>
+    
+    <section class="problem-grid" id="problem-grid">
+      <!-- Problem cards will be loaded here -->
+      <!-- Example card: -->
+      <a href="/problems/min-perimeter.html" class="problem-card">
+        <div class="card-header">
+          <h3>Minimum Perimeter Triangle</h3>
+        </div>
+        <div class="card-body">
+          <p>Discover how to find the triangle with minimum perimeter using reflections.</p>
+        </div>
+      </a>
+      
+      <a href="/problems/square-perpendicular-similarity.html" class="problem-card">
+        <div class="card-header">
+          <h3>Square Perpendicular Similarity</h3>
+        </div>
+        <div class="card-body">
+          <p>Explore geometric relationships in a square with perpendicular constructions.</p>
+        </div>
+      </a>
+    </section>
+  </main>
+  
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 Math Visualizations</p>
+    </div>
+  </footer>
+  <script>
+    // Optional: Dynamically load problem cards from the API
+    /*
+    fetch('/api/problems')
+      .then(response => response.json())
+      .then(problems => {
+        const grid = document.getElementById('problem-grid');
+        
+        // Clear existing content
+        grid.innerHTML = '';
+        
+        // Add each problem as a card
+        problems.forEach(problem => {
+          const card = document.createElement('a');
+          card.href = problem.url;
+          card.className = 'problem-card';
+          
+          card.innerHTML = `
+            <div class="card-header">
+              <h3>${problem.name}</h3>
+            </div>
+            <div class="card-body">
+              <p>Interactive visualization of ${problem.name.toLowerCase()}</p>
+            </div>
+          `;
+          
+          grid.appendChild(card);
+        });
+      })
+      .catch(error => console.error('Error loading problems:', error));
+    */
+  </script>
+</body>
+</html>
