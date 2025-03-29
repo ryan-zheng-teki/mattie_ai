@@ -1,34 +1,91 @@
 
 
+
+---
+
 ### 🧱 Output Requirements
 
 #### 1. Project Structure
-You must create files following this structure:
-- `public/problems/{problem-name}.html` - The problem's HTML page
-- `public/js/problems/{problem-name}/config.js` - Configuration for the problem
-- `public/js/problems/{problem-name}/index.js` - Implementation of the visualization
 
-Where `{problem-name}` should be a kebab-case name derived from the problem (e.g., "min-perimeter" for minimum perimeter triangle).
+Create files in the following structure:
 
-#### 2. Page Layout
-The HTML page must be split into two main parts:
-- **Left Panel**: Step-by-step explanation ("解题步骤")
-- **Right Panel**: Interactive canvas (Konva.js visualization)
+```
+public/
+├── problems/
+│   └── {problem-name}.html                 # HTML page for the problem
+├── js/
+│   └── problems/
+│       └── {problem-name}/
+│           ├── config.js                  # Metadata, step texts, default config
+│           └── index.js                   # Konva.js implementation & interactivity
+```
 
-#### 3. Implementation Features
-Your solution must include:
-- A step-by-step visualization with 3-5 clear steps
-- Interactive elements (draggable points)
-- Clear animations between steps
-- Proper explanation of the mathematical solution
-
-#### 4. Technical Requirements
-- Use Konva.js with GSAP for animations
-- Utilize our shared utility functions where appropriate
-- Ensure responsive design
-- Include keyboard shortcuts (1-5 for steps, Space for interaction, C to clear)
+Use **kebab-case** for `{problem-name}` (e.g., `min-perimeter-triangle`).
 
 ---
+
+#### 2. Page Layout
+
+Split the HTML into two panels:
+
+- **Left Panel**:  
+  `解题步骤` — Step-by-step explanation with titles and clear descriptions  
+  - Users can navigate steps by clicking or using keyboard shortcuts
+
+- **Right Panel**:  
+  Konva.js canvas with step-by-step visuals  
+  - Each step must correspond to a visual change  
+  - Points, lines, and shapes must be drawn **progressively** with animations  
+  - Elements should be **labeled clearly** and use **distinct colors** if helpful
+
+---
+
+#### 3. Step-by-Step Instruction Guidelines
+
+Design steps to reflect the logic and geometry of the problem. The number of steps is **flexible** and depends on the problem. Each step should:
+
+✅ Describe one **clear visual or interactive action**  
+✅ Be **explicit and broken down** into small sub-steps if needed  
+✅ Use **simple, beginner-friendly language**  
+✅ Ensure each step results in a **visible and meaningful change**  
+
+🧱 Example (Good Practice):
+> Step 1: Place point A at (0, 0)  
+> Step 2: Place point B at (4, 0)  
+> Step 3: Draw a line from A to B  
+> Step 4: Place point C at (4, 3)  
+> Step 5: Draw a line from B to C  
+> Step 6: Draw a line from C to A to complete the triangle
+
+Each line, point, or label must be **visibly shown and animated** in the canvas as the user navigates through the steps.
+
+---
+
+#### 4. Features & Interactivity
+
+Your implementation must include:
+
+- ✅ **Draggable points** (when applicable)  
+- ✅ **Animations** with GSAP for new elements  
+- ✅ **Labels** for all points and lines  
+- ✅ **Interactive visualization** matching the current step  
+- ✅ **Undo/reset/clear** support  
+- ✅ **Keyboard shortcuts**:  
+  - `1–9`: Go to step  
+  - `Space`: Next step  
+  - `C`: Clear canvas
+
+---
+
+#### 5. Technical Requirements
+
+- Use **Konva.js** for rendering  
+- Use **GSAP** for transitions  
+- Use our **utility functions** for drawing and updating elements  
+- Ensure **responsive layout** across devices
+
+---
+
 
 ### 📚 File Examples
 
