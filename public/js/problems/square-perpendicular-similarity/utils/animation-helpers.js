@@ -445,6 +445,8 @@ function animateTriangleFill(points, color, duration = 0.5, delay = 0) {
 // Show a formula or text as a mathematical annotation
 function showMathAnnotation(text, position, duration = 0.5, delay = 0) {
   return new Promise((resolve) => {
+    console.log(`Creating math annotation "${text}" at position (${position.x}, ${position.y})`);
+    
     const annotation = new Konva.Text({
       x: position.x,
       y: position.y,

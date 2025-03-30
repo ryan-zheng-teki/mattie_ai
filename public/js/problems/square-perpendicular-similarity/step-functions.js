@@ -537,9 +537,9 @@ function drawStep5(withAnimation = true) {
   elements.pointI = pointI;
   elements.textI = textI;
 
-  // Proof annotations positions
-  const proofPos1 = { x: stage.width() / 2, y: 50 };
-  const proofPos2 = { x: stage.width() / 2, y: 90 };
+  // Proof annotations positions - MODIFIED: Changed Y positions to avoid overlap with step 4
+  const proofPos1 = { x: stage.width() / 2, y: 65 }; // Changed from 50 to 65
+  const proofPos2 = { x: stage.width() / 2, y: 110 }; // Changed from 90 to 110
 
   if (withAnimation) {
       // Animate lines AH and EH appearing

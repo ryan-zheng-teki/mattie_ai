@@ -399,6 +399,30 @@ function navigateToStep(targetStep) {
       }
   }
 
+  // Special check for step 5: Verify no overlapping annotations remain
+  if (targetStep === 5) {
+    // Find all text nodes at the top of the stage that might be overlapping
+    const topTexts = layer.find('Text').filter(text => 
+      text.y() < 100 && text.text().includes('△')
+    );
+    
+    console.log(`Found ${topTexts.length} potential annotation texts at the top of the stage`);
+    
+    // If more than one similarity annotation is found, keep only the newest one
+    if (topTexts.length > 1) {
+      console.warn(`Found multiple annotation texts that may be overlapping. Cleaning up...`);
+      // Keep only the elements we know should be here for step 5
+      topTexts.forEach(text => {
+        const isProofText = text === elements.proofText1 || text === elements.proofText2;
+        if (!isProofText && text.text().includes('△')) {
+          console.log(`Destroying overlapping text: ${text.text()}`);
+          text.destroy();
+        }
+      });
+      layer.batchDraw();
+    }
+  }
+
   // Update the current step tracker
   currentActiveStep = targetStep;
 
@@ -422,37 +446,29 @@ function clearElementsForStep(stepNum) {
     if (elements[key]) {
       // Handle cases where element might be an array (like squareEdges)
       if (Array.isArray(elements[key])) {
-         elements[key].forEach(el => { if(el && typeof el.destroy === 'function') el.destroy(); });
+         elements[key].forEach(el => { 
+           if(el && typeof el.destroy === 'function') {
+             console.log(`Destroying array element ${key}`);
+             el.destroy(); 
+           }
+         });
       } else if (elements[key] instanceof Konva.Node) {
+         console.log(`Destroying Konva node ${key}`);
          elements[key].destroy(); // Destroy Konva node
+      } else {
+         console.warn(`Element ${key} is neither array nor Konva node. Type: ${typeof elements[key]}`);
       }
       delete elements[key]; // Remove reference from our tracker
       clearedCount++;
+    } else {
+      console.warn(`Element ${key} not found in elements map when clearing step ${stepNum}`);
     }
   });
-
-  // Special handling for step-specific annotations/texts if not in main elements map
-  const stepSpecificElements = {
-      4: ['similarityAnnotation'],
-      5: ['proofText1', 'proofText2'],
-      // Add other step-specific ephemeral elements here if needed
-  };
-
-  if (stepSpecificElements[stepNum]) {
-      stepSpecificElements[stepNum].forEach(key => {
-          if (elements[key]) {
-              if (elements[key] instanceof Konva.Node) elements[key].destroy();
-              delete elements[key];
-              clearedCount++;
-          }
-      });
-  }
 
   // Also clear the step explanation text if it exists for this step
   if (elements.stepExplanation) {
       elements.stepExplanation.destroy();
       delete elements.stepExplanation;
-      clearedCount++; // Count it if it was present
   }
 
   console.log(`Cleared ${clearedCount} element groups/elements for step ${stepNum}.`);
