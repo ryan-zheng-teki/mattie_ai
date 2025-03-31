@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Semicircle Perpendicular Equality | Math Visualizations</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <!-- Include Konva and GSAP -->
+  <script src="https://unpkg.com/konva@8.3.2/konva.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.0/gsap.min.js"></script>
+  <style>
+    /* Additional styles for auto mode button */
+    .auto-button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      text-align: center;
+      font-size: 16px;
+      margin: 10px 0;
+      cursor: pointer;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+    .auto-button:hover {
+      background-color: #45a049;
+    }
+    .auto-button:active {
+      background-color: #3e8e41;
+    }
+    .auto-button.stop {
+      background-color: #f44336;
+    }
+    .auto-button.stop:hover {
+      background-color: #d32f2f;
+    }
+    
+    /* New styles for problem description section */
+    .problem-description {
+      background-color: #f7f9fc;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      border-left: 4px solid #4285f4;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .problem-description h3 {
+      margin-top: 0;
+      color: #333;
+      font-size: 1.3em;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .problem-description p {
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    
+    .problem-description .math {
+      font-style: italic;
+    }
+    
+    /* New styles for back link */
+    .back-link-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      font-size: 14px;
+      color: #4285f4;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    
+    .back-link:hover {
+      background-color: rgba(66, 133, 244, 0.1);
+      text-decoration: underline;
+    }
+    
+    .back-link svg {
+      margin-right: 5px;
+      fill: currentColor;
+    }
+    
+    .intro {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    
+    .page-title {
+      margin-bottom: 15px;
+    }
+    
+    .prove-items {
+      margin-top: 15px;
+    }
+    
+    .prove-items ol {
+      margin-top: 5px;
+      padding-left: 25px;
+    }
+    
+    .prove-items li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Interactive Math Visualizations</h1>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Repositioned back link to the top -->
+    <div class="back-link-container">
+      <a href="/" class="back-link">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        Back to All Visualizations
+      </a>
+    </div>
+    
+    <section class="intro">
+      <h2 class="page-title">Semicircle Perpendicular Equality</h2>
+    </section>
+
+    <!-- Problem Description Section -->
+    <section class="problem-description">
+      <h3>问题陈述</h3>
+      
+      <p>已知: 如图，O是半圆的圆心，C、E是圆上的两点，CD⊥AB，EF⊥AB，EG⊥CO.</p>
+      
+      <div class="prove-items">
+        <p>求证: CD = GF.</p>
+      </div>
+    </section>
+
+    <div class="visualization-container">
+      <!-- Left Panel: Steps -->
+      <div id="steps-container">
+        <h2>解题步骤</h2>
+        <!-- Auto mode button -->
+        <button id="auto-mode-button" class="auto-button">开始自动演示</button>
+        
+        <ul id="steps-list">
+          <li data-step="1" class="active">
+            <strong>1. 绘制半圆</strong>
+            <p>绘制以O为圆心的半圆，AB为直径。</p>
+          </li>
+          <li data-step="2">
+            <strong>2. 取点C和E</strong>
+            <p>在半圆上取点C和E。</p>
+          </li>
+          <li data-step="3">
+            <strong>3. 作垂线</strong>
+            <p>从点C和E分别作CD⊥AB和EF⊥AB，"⊥"表示两线垂直。</p>
+          </li>
+          <li data-step="4">
+            <strong>4. 连接CO和垂线EG</strong>
+            <p>连接CO，从点E作EG⊥CO。</p>
+          </li>
+          <li data-step="5">
+            <strong>5. 证明CD=GF</strong>
+            <p>通过三角形相似性证明CD=GF。</p>
+          </li>
+          <li data-step="clear">
+            <strong>清空重置</strong>
+            <p>清除画布，重新开始探索。</p>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Right Panel: Canvas -->
+      <div id="canvas-container">
+        <div id="konva-stage-container" class="konva-container"></div>
+      </div>
+    </div>
+
+    <div id="controls-container">
+      快捷键: <kbd>1</kbd>-<kbd>5</kbd> 步骤 | <kbd>C</kbd> 清空
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 Math Visualizations</p>
+    </div>
+  </footer>
+
+  <!-- Load utility scripts first -->
+  <script src="/js/utils/geometry.js"></script>
+  <script src="/js/utils/animation.js"></script>
+
+  <!-- Load problem-specific scripts -->
+  <script src="/js/problems/semicircle-perpendicular-equality/config.js"></script>
+  <script src="/js/problems/semicircle-perpendicular-equality/utils/animation-helpers.js"></script>
+  <script src="/js/problems/semicircle-perpendicular-equality/interactivity.js"></script>
+  <script src="/js/problems/semicircle-perpendicular-equality/step-functions.js"></script>
+  <script src="/js/problems/semicircle-perpendicular-equality/index.js"></script>
+</body>
+</html>

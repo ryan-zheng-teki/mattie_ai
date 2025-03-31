@@ -1,8 +1,3 @@
-
-
-
----
-
 ### 🧱 Output Requirements
 
 #### 1. Project Structure
