@@ -50,7 +50,7 @@ function makeSquareDraggable() {
   const dragHelp = new Konva.Text({
     x: 20,
     y: 20,
-    text: "拖动正方形顶点进行动态探索!",
+    text: "Drag square vertices for dynamic exploration!",
     fontSize: 16,
     fill: '#777',
     padding: 10,

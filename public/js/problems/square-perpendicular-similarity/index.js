@@ -258,7 +258,7 @@ function startAutoMode() {
   // Update UI first
   const autoModeButton = document.getElementById('auto-mode-button');
   if (autoModeButton) {
-    autoModeButton.textContent = "停止自动演示";
+    autoModeButton.textContent = "Stop Auto Demo";
     autoModeButton.classList.add('stop');
   }
 
@@ -314,7 +314,7 @@ function stopAutoMode() {
   // Update button state
   const autoModeButton = document.getElementById('auto-mode-button');
   if (autoModeButton) {
-    autoModeButton.textContent = "开始自动演示";
+    autoModeButton.textContent = "Start Auto Demo";
     autoModeButton.classList.remove('stop');
   }
 }

@@ -44,7 +44,7 @@ function drawStep1(withAnimation = true) {
       // Ensure visibility if they were hidden? Generally not needed with this flow.
       // We might want to re-show the explanation if navigating back to step 1
       if (withAnimation) {
-        showStepExplanation("步骤1: 绘制正方形ABCD，并找出BC边的中点E", 0.1); // Faster appearance if re-showing
+        showStepExplanation("Step 1: Draw square ABCD and find midpoint E of side BC", 0.1); // Faster appearance if re-showing
       }
       return;
   }
@@ -59,7 +59,7 @@ function drawStep1(withAnimation = true) {
   const E = config.pointE; 
   
   if (withAnimation) {
-    showStepExplanation("步骤1: 绘制正方形ABCD，并找出BC边的中点E");
+    showStepExplanation("Step 1: Draw square ABCD and find midpoint E of side BC");
   }
   
   // Create the square outline (simplified - one shape if not animating edge-by-edge)
@@ -134,7 +134,7 @@ function drawStep2(withAnimation = true) {
   // Idempotency Check
   if (elements.lineBG && elements.pointG) {
       console.log("Step 2 elements already exist. Skipping draw.");
-      if (withAnimation) showStepExplanation("步骤2: 连接AE，然后过点B作垂线BG⊥AE", 0.1);
+      if (withAnimation) showStepExplanation("Step 2: Connect AE, then draw perpendicular line BG⊥AE from point B", 0.1);
       return;
   }
   console.log(`Executing Step 2 (Animate: ${withAnimation})`);
@@ -148,7 +148,7 @@ function drawStep2(withAnimation = true) {
   config.pointG = G; // Update config
 
   if (withAnimation) {
-    showStepExplanation("步骤2: 连接AE，然后过点B作垂线BG⊥AE");
+    showStepExplanation("Step 2: Connect AE, then draw perpendicular line BG⊥AE from point B");
   }
 
   // Create line AE
@@ -220,7 +220,7 @@ function drawStep3(withAnimation = true) {
   // Idempotency Check
   if (elements.lineCF && elements.pointH && elements.pointF) {
       console.log("Step 3 elements already exist. Skipping draw.");
-       if (withAnimation) showStepExplanation("步骤3: 延长BG，然后从点C作垂线CF⊥BG", 0.1);
+       if (withAnimation) showStepExplanation("Step 3: Extend BG, then draw perpendicular line CF⊥BG from point C", 0.1);
       return;
   }
   console.log(`Executing Step 3 (Animate: ${withAnimation})`);
@@ -257,7 +257,7 @@ function drawStep3(withAnimation = true) {
   const finalF = config.pointF; // Use the calculated or fallback F
 
   if (withAnimation) {
-    showStepExplanation("步骤3: 延长BG，然后从点C作垂线CF⊥BG");
+    showStepExplanation("Step 3: Extend BG, then draw perpendicular line CF⊥BG from point C");
   }
 
   // Create dashed extended BG line
@@ -335,7 +335,7 @@ function drawStep4(withAnimation = true) {
   // Idempotency Check
   if (elements.triangleABG && elements.triangleBCH && elements.similarityAnnotation) {
       console.log("Step 4 elements already exist. Skipping draw.");
-       if (withAnimation) showStepExplanation("步骤4: 观察三角形△ABG和△BCH的相似性", 0.1);
+       if (withAnimation) showStepExplanation("Step 4: Observe the similarity between triangles △ABG and △BCH", 0.1);
       return;
   }
   console.log(`Executing Step 4 (Animate: ${withAnimation})`);
@@ -352,7 +352,7 @@ function drawStep4(withAnimation = true) {
   }
 
   if (withAnimation) {
-    showStepExplanation("步骤4: 观察三角形△ABG和△BCH的相似性");
+    showStepExplanation("Step 4: Observe the similarity between triangles △ABG and △BCH");
   }
 
   // Create triangle ABG using Konva.Line with closed property
@@ -455,7 +455,7 @@ function drawStep5(withAnimation = true) {
   // Idempotency Check
   if (elements.lineAH && elements.pointI && elements.proofText1) {
       console.log("Step 5 elements already exist. Skipping draw.");
-      if (withAnimation) showStepExplanation("步骤5: 连接AH和EH，延长交CD于I，展示证明", 0.1);
+      if (withAnimation) showStepExplanation("Step 5: Connect AH and EH, extend to intersect CD at I, and show proof", 0.1);
       return;
   }
   console.log(`Executing Step 5 (Animate: ${withAnimation})`);
@@ -498,7 +498,7 @@ function drawStep5(withAnimation = true) {
 
 
   if (withAnimation) {
-    showStepExplanation("步骤5: 连接AH和EH，延长交CD于I，展示证明");
+    showStepExplanation("Step 5: Connect AH and EH, extend to intersect CD at I, and show proof");
   }
 
   // Create line AH
