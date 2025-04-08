@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Square Perpendicular Similarity | Math Visualizations</title>
+  <title>Ellipse Ratio Problem | Math Visualizations</title>
   <link rel="stylesheet" href="/css/styles.css">
   <!-- Include Konva and GSAP -->
   <script src="https://unpkg.com/konva@8.3.2/konva.min.js"></script>
@@ -198,6 +198,23 @@
       color: #666;
       margin: 5px 0;
     }
+
+    /* Styles for ratio display */
+    .result-display {
+      background-color: #effffe;
+      border-radius: 6px;
+      padding: 10px 15px;
+      margin: 10px 0;
+      border-left: 4px solid #00bcd4;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      font-size: 1.1em;
+      transition: background-color 0.3s;
+    }
+    
+    .result-display.highlight {
+      background-color: #e8f5e9;
+      border-left-color: #4caf50;
+    }
   </style>
 </head>
 <body>
@@ -217,22 +234,19 @@
         Back to All Visualizations
       </a>
     </div>
-    
-    <!-- Removed the intro section with the redundant title -->
 
     <!-- Problem Description Section -->
     <section class="problem-description">
       <h3>Problem Statement</h3>
       
-      <p>Consider a square ABCD. Let E be the midpoint of side BC. Draw segment AE, and from point B draw a perpendicular line to AE, intersecting at point G. Extend segment BG, then from point C draw a perpendicular line to this extension, intersecting at point H and extending to AD at point F. Connect points A and H, and connect points E and H. Extend segment EH until it intersects side CD at point I.</p>
+      <p>In a rectangular coordinate system xOy, there are two ellipses:</p>
+      <p class="math">Ellipse C: x²/4 + y² = 1</p>
+      <p class="math">Ellipse E: x²/16 + y²/4 = 1</p>
+      
+      <p>Point P is an arbitrary point on ellipse C. The ray OP (from origin O) intersects ellipse E at point Q.</p>
       
       <div class="prove-items">
-        <p>Prove the following:</p>
-        <ol>
-          <li>Triangles ABG and BCH are similar.</li>
-          <li>AB<sup>2</sup> = AE·BH</li>
-          <li>DI/IC = 2</li>
-        </ol>
+        <p>Find the value of the ratio |OQ|/|OP|.</p>
       </div>
     </section>
 
@@ -245,24 +259,24 @@
         
         <ul id="steps-list">
           <li data-step="1" class="active">
-            <strong>1. Draw square and midpoint E</strong>
-            <p>We first draw square ABCD, then find the midpoint E of side BC.</p>
+            <strong>1. Draw the coordinate system and ellipses</strong>
+            <p>Draw the coordinate axes and both ellipses C and E.</p>
           </li>
           <li data-step="2">
-            <strong>2. Draw perpendicular BG</strong>
-            <p>From point B draw perpendicular line BG⊥AE, intersecting at point G.</p>
+            <strong>2. Select point P on ellipse C</strong>
+            <p>Choose any point P on ellipse C and mark it.</p>
           </li>
           <li data-step="3">
-            <strong>3. Draw perpendicular CF</strong>
-            <p>From point C draw perpendicular line CF⊥BG's extension, intersecting at point H, extending to AD at F.</p>
+            <strong>3. Draw ray OP and find intersection Q</strong>
+            <p>Draw ray OP and find where it intersects ellipse E at point Q.</p>
           </li>
           <li data-step="4">
-            <strong>4. Observe triangle similarity</strong>
-            <p>By observation, triangles △ABG and △BCH are similar.</p>
+            <strong>4. Calculate ratio |OQ|/|OP|</strong>
+            <p>Calculate and display the ratio of distances |OQ|/|OP|.</p>
           </li>
           <li data-step="5">
-            <strong>5. Connect AH and EH</strong>
-            <p>Connect points A and H, E and H, extend to point I and prove the relationships.</p>
+            <strong>5. Demonstrate constant ratio</strong>
+            <p>Show that this ratio remains constant (= 2) regardless of P's position.</p>
           </li>
           <li data-step="clear">
             <strong>Clear & Reset</strong>
@@ -274,11 +288,14 @@
       <!-- Right Panel: Canvas -->
       <div id="canvas-container">
         <div id="konva-stage-container" class="konva-container"></div>
+        <div id="ratio-display" class="result-display" style="display: none;">
+          Ratio |OQ|/|OP| = <span id="ratio-value">0</span>
+        </div>
       </div>
     </div>
 
     <div id="controls-container">
-      Shortcuts: <kbd>1</kbd>-<kbd>5</kbd> Steps | <kbd>C</kbd> Clear
+      Shortcuts: <kbd>1</kbd>-<kbd>5</kbd> Steps | <kbd>C</kbd> Clear | <kbd>D</kbd> Drag Mode
     </div>
   </main>
 
@@ -293,10 +310,10 @@
   <script src="/js/utils/animation.js"></script>
 
   <!-- Load problem-specific scripts -->
-  <script src="/js/problems/square-perpendicular-similarity/config.js"></script>
-  <script src="/js/problems/square-perpendicular-similarity/utils/animation-helpers.js"></script>
-  <script src="/js/problems/square-perpendicular-similarity/interactivity.js"></script>
-  <script src="/js/problems/square-perpendicular-similarity/step-functions.js"></script>
-  <script src="/js/problems/square-perpendicular-similarity/index.js"></script>
+  <script src="/js/problems/ellipse-ratio-problem/config.js"></script>
+  <script src="/js/problems/ellipse-ratio-problem/utils/animation-helpers.js"></script>
+  <script src="/js/problems/ellipse-ratio-problem/interactivity.js"></script>
+  <script src="/js/problems/ellipse-ratio-problem/step-functions.js"></script>
+  <script src="/js/problems/ellipse-ratio-problem/index.js"></script>
 </body>
 </html>
