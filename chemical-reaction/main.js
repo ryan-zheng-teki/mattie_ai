@@ -161,7 +161,7 @@ let reactionPhase = 'initial';
 let lastTime = 0;
 let animationInProgress = false;
 let currentStep = 0;
-let showShellLabels = true;
+let showShellLabels = false; // Default to false - don't show shell labels
 let copperSulfurBond = null;
 
 // --- DOM Elements ---
@@ -309,8 +309,8 @@ function createOrbitalShell(radius, position = new THREE.Vector3(), shellIndex =
     
     // Add shell label if enabled
     if (showShellLabels) {
-        const shellNames = ['K', 'L', 'M', 'N', 'O', 'P', 'Q'];
-        const shellName = shellNames[shellIndex] || `Shell ${shellIndex + 1}`;
+        // Use simple numerical labels (1, 2, 3...) instead of K, L, M, N
+        const shellName = (shellIndex + 1).toString();
         
         const labelDiv = document.createElement('div');
         labelDiv.className = 'shell-label';
@@ -1840,8 +1840,9 @@ function init() {
     stepButton.addEventListener('click', stepReaction);
     shellLabelsCheckbox.addEventListener('change', toggleShellLabels);
     
-    // Get initial shell label state
-    showShellLabels = shellLabelsCheckbox.checked;
+    // Make sure checkbox is unchecked by default
+    shellLabelsCheckbox.checked = false;
+    showShellLabels = false;
     
     // Initialize with the default reaction
     setupReaction(currentReaction);
