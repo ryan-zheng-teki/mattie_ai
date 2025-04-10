@@ -292,33 +292,58 @@ class ChemistryVisualizer {
         // Stop all animations
         TWEEN.removeAll();
         
-        // Remove all objects from the reaction group
-        while(this.currentReactionGroup.children.length > 0) {
-            const child = this.currentReactionGroup.children[0];
-            this.currentReactionGroup.remove(child);
-            
-            // Dispose of geometries and materials
-            if(child.geometry) child.geometry.dispose();
-            if(child.material) {
-                if(Array.isArray(child.material)) {
-                    child.material.forEach(material => material.dispose());
-                } else {
-                    child.material.dispose();
+        // Function to recursively dispose of an object and its children
+        const disposeObject = (object) => {
+            // Process all children first
+            if (object.children && object.children.length > 0) {
+                // Create a copy of the children array to avoid modification during iteration
+                const children = [...object.children];
+                for (let child of children) {
+                    disposeObject(child);
                 }
             }
+            
+            // Remove CSS2DObjects (including nucleus labels and other labels)
+            if (object instanceof CSS2DObject) {
+                if (object.parent) {
+                    object.parent.remove(object);
+                }
+                return; // CSS2DObjects don't have geometries or materials to dispose
+            }
+            
+            // Dispose geometries and materials
+            if (object.geometry) {
+                object.geometry.dispose();
+            }
+            
+            if (object.material) {
+                if (Array.isArray(object.material)) {
+                    object.material.forEach(material => material.dispose());
+                } else {
+                    object.material.dispose();
+                }
+            }
+            
+            // Remove from parent
+            if (object.parent) {
+                object.parent.remove(object);
+            }
+        };
+        
+        // Process all objects in the reaction group using our recursive function
+        while (this.currentReactionGroup.children.length > 0) {
+            disposeObject(this.currentReactionGroup.children[0]);
         }
         
         // Clear shell labels
-        this.shellLabels.forEach(label => {
-            if (label.element && label.element.parent) {
-                label.element.parent.remove(label.element);
-            }
-        });
         this.shellLabels = [];
         
         // Reset tracking arrays/objects
         this.electrons = [];
         this.molecules = {};
+        
+        // Ensure everything is really gone
+        console.log("Visualization cleared. Remaining objects:", this.currentReactionGroup.children.length);
     }
     
     // Toggle shell labels visibility
@@ -414,6 +439,37 @@ class ChemistryVisualizer {
         nucleus.receiveShadow = true;
         
         return nucleus;
+    }
+    
+    // Create a nucleus label
+    createNucleusLabel(elementSymbol, nucleus) {
+        // Create label container
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'nucleus-label';
+        labelDiv.textContent = elementSymbol;
+        
+        // Style the label to be clearly visible inside the nucleus
+        labelDiv.style.color = 'white';
+        labelDiv.style.backgroundColor = 'transparent';
+        labelDiv.style.fontSize = '14px';
+        labelDiv.style.fontWeight = 'bold';
+        labelDiv.style.textShadow = '0px 0px 3px rgba(0, 0, 0, 0.9)';
+        labelDiv.style.pointerEvents = 'none';
+        labelDiv.style.userSelect = 'none';
+        labelDiv.style.display = 'flex';
+        labelDiv.style.justifyContent = 'center';
+        labelDiv.style.alignItems = 'center';
+        
+        // Create the 2D label object
+        const nucleusLabel = new CSS2DObject(labelDiv);
+        
+        // Position at the center of the nucleus
+        nucleusLabel.position.set(0, 0, 0);
+        
+        // Add label to nucleus
+        nucleus.add(nucleusLabel);
+        
+        return nucleusLabel;
     }
     
     // Create an orbital shell visualization with improved visibility
@@ -534,6 +590,9 @@ class ChemistryVisualizer {
         // Create nucleus
         const nucleus = this.createNucleusMesh(elementSymbol, NUCLEUS_RADIUS * scale, new THREE.Vector3());
         atomGroup.add(nucleus);
+        
+        // Add element label to nucleus
+        this.createNucleusLabel(elementSymbol, nucleus);
         
         // Set up electrons and shells
         const atomElectrons = [];
