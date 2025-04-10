@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemical Reaction Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="header">
+        <h1>Chemical Reaction Visualizer</h1>
+        <p>Understanding how atoms recombine through electron transfer</p>
+    </div>
+
+    <div id="controls-panel">
+        <div id="selection-controls">
+            <label for="reaction-select">Select Chemical Reaction:</label>
+            <select id="reaction-select">
+                <option value="single-replacement">Single Replacement: Zn + CuSO₄ → ZnSO₄ + Cu</option>
+                <option value="combustion">Combustion: CH₄ + 2O₂ → CO₂ + 2H₂O</option>
+                <option value="acid-base">Acid-Base: HCl + NaOH → NaCl + H₂O</option>
+                <option value="ionic-bond">Ionic Bond Formation: Na + Cl → NaCl</option>
+            </select>
+        </div>
+        
+        <div id="reaction-info-panel">
+            <div id="reaction-equation">Zn + CuSO₄ → ZnSO₄ + Cu</div>
+            <div id="reaction-phase">Initial state: Reactants</div>
+            <div id="reaction-explanation">
+                This reaction begins with zinc metal (Zn) and copper sulfate (CuSO₄) solution.
+                The zinc atoms have 2 valence electrons, while the copper ions in CuSO₄ have already lost 2 electrons (Cu²⁺).
+            </div>
+            <div id="electron-transfer-info">
+                Zinc has a stronger tendency to lose electrons than copper.
+            </div>
+        </div>
+        
+        <div id="animation-controls">
+            <button id="play-button">Play Reaction</button>
+            <button id="reset-button">Reset</button>
+            <button id="step-button">Step Forward</button>
+            <div class="display-options">
+                <label>
+                    <input type="checkbox" id="show-shell-labels" checked> 
+                    Show Shell Labels
+                </label>
+            </div>
+        </div>
+    </div>
+    
+    <div id="visualization-container">
+        <!-- Three.js canvas will be inserted here -->
+    </div>
+    
+    <!-- Import Three.js and Tween.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "tween": "https://unpkg.com/@tweenjs/tween.js@23.1.1/dist/tween.esm.js"
+            }
+        }
+    </script>
+
+    <!-- Main application script -->
+    <script type="module" src="main.js"></script>
+</body>
+</html>

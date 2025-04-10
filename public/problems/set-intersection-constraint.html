@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Set Intersection Constraint | Math Visualizations</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <!-- Include Konva and GSAP -->
+  <script src="https://unpkg.com/konva@8.3.2/konva.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.0/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+  <style>
+    /* Additional styles for auto mode button */
+    .auto-button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      text-align: center;
+      font-size: 16px;
+      margin: 10px 0;
+      cursor: pointer;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+    .auto-button:hover {
+      background-color: #45a049;
+    }
+    .auto-button:active {
+      background-color: #3e8e41;
+    }
+    .auto-button.stop {
+      background-color: #f44336;
+    }
+    .auto-button.stop:hover {
+      background-color: #d32f2f;
+    }
+    
+    /* Styles for problem description section */
+    .problem-description {
+      background-color: #f7f9fc;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      border-left: 4px solid #4285f4;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .problem-description h3 {
+      margin-top: 0;
+      color: #333;
+      font-size: 1.3em;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .problem-description p {
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    
+    .problem-description .math {
+      font-style: italic;
+    }
+    
+    /* Styles for back link */
+    .back-link-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      font-size: 14px;
+      color: #4285f4;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    
+    .back-link:hover {
+      background-color: rgba(66, 133, 244, 0.1);
+      text-decoration: underline;
+    }
+    
+    .back-link svg {
+      margin-right: 5px;
+      fill: currentColor;
+    }
+    
+    .intro {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    
+    .page-title {
+      margin-bottom: 15px;
+    }
+    
+    .prove-items {
+      margin-top: 15px;
+    }
+    
+    .prove-items ol {
+      margin-top: 5px;
+      padding-left: 25px;
+    }
+    
+    .prove-items li {
+      margin-bottom: 8px;
+    }
+    
+    /* New control styles */
+    .controls-panel {
+      background-color: #f5f7fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .slider-container {
+      margin: 10px 0;
+    }
+    
+    .slider-container label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    .slider-row {
+      display: flex;
+      align-items: center;
+    }
+    
+    .slider {
+      flex-grow: 1;
+      margin-right: 10px;
+    }
+    
+    .slider-value {
+      width: 60px;
+      text-align: center;
+      font-weight: bold;
+      background: #e8f0fe;
+      padding: 5px;
+      border-radius: 4px;
+    }
+    
+    /* MathJax equation styles */
+    .equation {
+      display: block;
+      margin: 15px 0;
+      text-align: center;
+      font-size: 1.1em;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Interactive Math Visualizations</h1>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Back link to the top -->
+    <div class="back-link-container">
+      <a href="/" class="back-link">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        Back to All Visualizations
+      </a>
+    </div>
+    
+    <section class="intro">
+      <h2 class="page-title">Set Intersection Constraint</h2>
+    </section>
+
+    <!-- Problem Description Section -->
+    <section class="problem-description">
+      <h3>Problem Statement</h3>
+      
+      <p>Let |A| be the number of elements in a finite set A. Given ω > 0, define:</p>
+      
+      <div class="equation">
+        S<sub>ω</sub> = { θ | 2<sup>2025</sup> + ω·θ is divisible by 7 }
+      </div>
+      
+      <p>If for any real number a and any positive integer n, the following constraint holds:</p>
+      
+      <div class="equation">
+        |S<sub>ω</sub> ∩ (a, a + ne<sup>-0.5n</sup>)| ≤ 3
+      </div>
+      
+      <p>Find the range of values for the real number ω.</p>
+    </section>
+
+    <div class="visualization-container">
+      <!-- Left Panel: Steps -->
+      <div id="steps-container">
+        <h2>Solution Steps</h2>
+        <!-- Auto mode button -->
+        <button id="auto-mode-button" class="auto-button">Start Auto Demonstration</button>
+        
+        <ul id="steps-list">
+          <li data-step="1" class="active">
+            <strong>1. Understanding the Set S<sub>ω</sub></strong>
+            <p>Analyze the structure of the set and its relationship with ω.</p>
+          </li>
+          <li data-step="2">
+            <strong>2. Distribution of Elements</strong>
+            <p>Visualize how elements of S<sub>ω</sub> are distributed for different values of ω.</p>
+          </li>
+          <li data-step="3">
+            <strong>3. Intersection Constraint</strong>
+            <p>Examine how the intersection with intervals (a, a+ne<sup>-0.5n</sup>) behaves.</p>
+          </li>
+          <li data-step="4">
+            <strong>4. Finding Critical Values</strong>
+            <p>Determine the boundary values of ω where the constraint is satisfied.</p>
+          </li>
+          <li data-step="5">
+            <strong>5. Solution Range</strong>
+            <p>Identify the complete range of valid ω values.</p>
+          </li>
+          <li data-step="clear">
+            <strong>Reset</strong>
+            <p>Clear the canvas and start over.</p>
+          </li>
+        </ul>
+        
+        <!-- Interactive Controls Panel -->
+        <div class="controls-panel" id="controls-panel">
+          <h3>Controls</h3>
+          
+          <div class="slider-container">
+            <label for="omega-slider">Value of ω:</label>
+            <div class="slider-row">
+              <input type="range" id="omega-slider" class="slider" min="0" max="10" step="0.1" value="1">
+              <span class="slider-value" id="omega-value">1.0</span>
+            </div>
+          </div>
+          
+          <div class="slider-container">
+            <label for="interval-slider">Interval length (n):</label>
+            <div class="slider-row">
+              <input type="range" id="interval-slider" class="slider" min="1" max="20" step="1" value="5">
+              <span class="slider-value" id="interval-value">5</span>
+            </div>
+          </div>
+          
+          <div class="slider-container">
+            <label for="position-slider">Interval start position (a):</label>
+            <div class="slider-row">
+              <input type="range" id="position-slider" class="slider" min="-10" max="10" step="0.5" value="0">
+              <span class="slider-value" id="position-value">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Canvas -->
+      <div id="canvas-container">
+        <div id="konva-stage-container" class="konva-container"></div>
+      </div>
+    </div>
+
+    <div id="controls-container">
+      Shortcuts: <kbd>1</kbd>-<kbd>5</kbd> Steps | <kbd>C</kbd> Reset
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 Math Visualizations</p>
+    </div>
+  </footer>
+
+  <!-- Load utility scripts first -->
+  <script src="/js/utils/geometry.js"></script>
+  <script src="/js/utils/animation.js"></script>
+
+  <!-- Load problem-specific scripts -->
+  <script src="/js/problems/set-intersection-constraint/config.js"></script>
+  <script src="/js/problems/set-intersection-constraint/utils/animation-helpers.js"></script>
+  <script src="/js/problems/set-intersection-constraint/interactivity.js"></script>
+  <script src="/js/problems/set-intersection-constraint/step-functions.js"></script>
+  <script src="/js/problems/set-intersection-constraint/index.js"></script>
+</body>
+</html>

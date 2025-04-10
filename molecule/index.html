@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Atom Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="controls">
+        <label for="element-select">Select Element / Molecule:</label>
+        <select id="element-select">
+            <option value="H">Hydrogen (H)</option>
+            <option value="He">Helium (He)</option>
+            <option value="Li">Lithium (Li)</option>
+            <option value="O">Oxygen (O)</option>
+            <option value="Ne">Neon (Ne)</option>
+            <option value="S">Sulfur (S)</option>
+            <option value="H2O">Water Formation (H₂O)</option>
+            <option value="SO4">Sulfate Ion (SO₄²⁻)</option>
+        </select>
+        <button id="ionize-h-button" style="display: none;">Show H Ionization (H → H+)</button>
+        <button id="oxidize-o-button" style="display: none;">Show O Reduction (O + 2e⁻ → O²⁻)</button>
+        <p id="element-info"></p>
+    </div>
+    <div id="visualization-container">
+        <!-- Three.js canvas will be inserted here -->
+    </div>
+
+    <!-- Import Three.js and Tween.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "tween": "https://unpkg.com/@tweenjs/tween.js@23.1.1/dist/tween.esm.js"
+            }
+        }
+    </script>
+
+    <!-- Main application script -->
+    <script type="module" src="main.js"></script>
+</body>
+</html>

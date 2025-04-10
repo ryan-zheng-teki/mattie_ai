@@ -1,0 +1,178 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+}
+
+#header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+#header p {
+    margin: 5px 0 0;
+    font-size: 16px;
+    font-style: italic;
+}
+
+#controls-panel {
+    background-color: #2c3e50;
+    padding: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    z-index: 10;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#selection-controls {
+    flex: 0 0 300px;
+}
+
+#selection-controls label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #e6e6e6;
+}
+
+#selection-controls select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #1a1a1a;
+    background-color: #34495e;
+    color: #e6e6e6;
+}
+
+#reaction-info-panel {
+    flex: 1 1 500px;
+    padding: 10px 15px;
+    background-color: #34495e;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+#reaction-equation {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    text-align: center;
+    padding: 5px;
+    background-color: #2c3e50;
+    border-radius: 4px;
+    color: #3498db;
+}
+
+#reaction-phase {
+    font-size: 16px;
+    font-weight: bold;
+    color: #e74c3c;
+    margin-bottom: 8px;
+}
+
+#reaction-explanation {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+#electron-transfer-info {
+    font-style: italic;
+    color: #3498db;
+}
+
+#animation-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex: 0 0 300px;
+    justify-content: center;
+    align-items: center;
+}
+
+#animation-controls button {
+    padding: 10px 15px;
+    cursor: pointer;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+#animation-controls button:hover {
+    background-color: #2980b9;
+}
+
+#animation-controls button:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+}
+
+.display-options {
+    margin-top: 8px;
+    color: #e6e6e6;
+}
+
+#visualization-container {
+    flex-grow: 1;
+    position: relative;
+    background-color: #000;
+    overflow: hidden;
+}
+
+#visualization-container canvas {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Shell label styling */
+.shell-label {
+    color: white;
+    font-size: 12px;
+    padding: 2px 5px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 3px;
+    pointer-events: none;
+}
+
+.molecule-label {
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 3px 6px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    #controls-panel {
+        flex-direction: column;
+    }
+    
+    #selection-controls, #reaction-info-panel, #animation-controls {
+        flex: 0 0 100%;
+        width: 100%;
+    }
+}
