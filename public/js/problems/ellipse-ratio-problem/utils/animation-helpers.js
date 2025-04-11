@@ -196,6 +196,19 @@ function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animD
       opacity: 0
     });
     
+    // Create additional text to highlight the relationship
+    const relationText = new Konva.Text({
+      x: (pointO.x + pointQ.x) / 2 + 50,
+      y: (pointO.y + pointQ.y) / 2 + 20,
+      text: `|OQ| = 2 · |OP|`,
+      fontSize: 16,
+      fontStyle: 'bold',
+      fill: config.colors.ratioHighlight,
+      background: 'rgba(255,255,255,0.8)',
+      padding: 5,
+      opacity: 0
+    });
+    
     const ratioText = new Konva.Text({
       x: stage.width() / 2,
       y: 60,
@@ -211,7 +224,7 @@ function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animD
     });
     ratioText.offsetX(ratioText.width() / 2); // Center horizontally
     
-    layer.add(opText, oqText, ratioText);
+    layer.add(opText, oqText, relationText, ratioText);
     
     // Animate the measurement lines and texts sequentially
     gsap.timeline()
@@ -219,6 +232,7 @@ function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animD
       .to(opText, { opacity: 1, duration: duration * 0.3 })
       .to(lineOQ, { opacity: 1, duration: duration * 0.3 })
       .to(oqText, { opacity: 1, duration: duration * 0.3 })
+      .to(relationText, { opacity: 1, duration: duration * 0.3 })
       .to(ratioText, { 
         opacity: 1, 
         duration: duration * 0.5,
@@ -248,7 +262,7 @@ function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animD
               
               // Clean up temporary visual elements after a delay
               setTimeout(() => {
-                gsap.to([lineOP, lineOQ, opText, oqText, ratioText], {
+                gsap.to([lineOP, lineOQ, opText, oqText, relationText, ratioText], {
                   opacity: 0,
                   duration: duration * 0.3,
                   onComplete: () => {
@@ -256,6 +270,7 @@ function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animD
                     lineOQ.destroy();
                     opText.destroy();
                     oqText.destroy();
+                    relationText.destroy();
                     ratioText.destroy();
                     layer.batchDraw();
                     resolve(ratio);
@@ -330,13 +345,36 @@ function demonstrateConstantRatio(duration = config.animDuration) {
     });
     annotation.offsetX(annotation.width() / 2);
     
-    layer.add(annotation);
+    // Create a mathematical explanation of why this happens
+    const mathExplanation = new Konva.Text({
+      x: stage.width() / 2,
+      y: 110,
+      text: "This happens because:\n1. P has coordinates (2cos(θ), sin(θ)) on ellipse C\n2. Ray OP can be written as t·(2cos(θ), sin(θ)) for t > 0\n3. Substituting into ellipse E gives us t = 2\n4. Thus Q = 2P = (4cos(θ), 2sin(θ))",
+      fontSize: 16,
+      fill: '#333',
+      align: 'center',
+      padding: 10,
+      background: 'rgba(255, 255, 255, 0.9)',
+      cornerRadius: 8,
+      opacity: 0
+    });
+    mathExplanation.offsetX(mathExplanation.width() / 2);
+    
+    layer.add(annotation, mathExplanation);
     
     // Show the annotation with animation
     gsap.to(annotation, {
       opacity: 1,
       duration: duration * 0.5,
-      ease: "power2.out"
+      ease: "power2.out",
+      onComplete: () => {
+        // Show the math explanation
+        gsap.to(mathExplanation, {
+          opacity: 1,
+          duration: duration * 0.5,
+          ease: "power2.out"
+        });
+      }
     });
     
     // Create an array of angles to demonstrate different points P
@@ -391,19 +429,33 @@ function demonstrateConstantRatio(duration = config.animDuration) {
       });
       layer.add(qIndicator);
       
+      // Create text showing the coordinates
+      const coordsText = new Konva.Text({
+        x: qx + 15,
+        y: qy - 40,
+        text: `P = (${(px-ox)/config.scale*2}, ${-(py-oy)/config.scale})\nQ = (${(qx-ox)/config.scale}, ${-(qy-oy)/config.scale}) = 2P`,
+        fontSize: 12,
+        fill: '#333',
+        padding: 3,
+        background: 'rgba(255,255,255,0.7)',
+        opacity: 0
+      });
+      layer.add(coordsText);
+      
       // Fade in the temporary elements
-      gsap.to([ray, qIndicator], {
+      gsap.to([ray, qIndicator, coordsText], {
         opacity: 0.8,
         duration: 0.3,
         onComplete: () => {
           // Fade out after a brief delay
-          gsap.to([ray, qIndicator], {
+          gsap.to([ray, qIndicator, coordsText], {
             opacity: 0,
             duration: 0.3,
             delay: 0.5,
             onComplete: () => {
               ray.destroy();
               qIndicator.destroy();
+              coordsText.destroy();
               layer.batchDraw();
             }
           });
@@ -433,11 +485,12 @@ function demonstrateConstantRatio(duration = config.animDuration) {
             
             // Cleanup and resolve after a delay
             setTimeout(() => {
-              gsap.to(annotation, {
+              gsap.to([annotation, mathExplanation], {
                 opacity: 0,
                 duration: duration * 0.3,
                 onComplete: () => {
                   annotation.destroy();
+                  mathExplanation.destroy();
                   resolve();
                 }
               });

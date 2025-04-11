@@ -140,8 +140,22 @@ function drawStep1(withAnimation = true) {
     visible: false
   });
   
+  // Add additional explanation about the ellipses
+  const ellipsesExplanation = new Konva.Text({
+    x: config.origin.x,
+    y: config.origin.y + config.ellipseE.b * config.scale + 30,
+    text: 'Note: Ellipse E is exactly twice the size of ellipse C in both x and y dimensions',
+    fontSize: config.styles.labelFontSize - 2,
+    fill: '#333',
+    align: 'center',
+    width: 300,
+    visible: false,
+    opacity: 0
+  });
+  ellipsesExplanation.offsetX(ellipsesExplanation.width() / 2);
+  
   // Add elements to the layer
-  layer.add(xAxis, yAxis, xLabel, yLabel, ellipseC, ellipseE, labelC, labelE);
+  layer.add(xAxis, yAxis, xLabel, yLabel, ellipseC, ellipseE, labelC, labelE, ellipsesExplanation);
   
   // Store references
   elements.xAxis = xAxis;
@@ -154,6 +168,7 @@ function drawStep1(withAnimation = true) {
   elements.ellipseE = ellipseE;
   elements.labelC = labelC;
   elements.labelE = labelE;
+  elements.ellipsesExplanation = ellipsesExplanation;
   
   if (withAnimation) {
     // Animate axes appearing
@@ -182,13 +197,21 @@ function drawStep1(withAnimation = true) {
                   .then(() => {
                     labelE.visible(true);
                     gsap.to(labelE, { opacity: 1, duration: config.animDuration * 0.3 });
+                    
+                    // Show the additional explanation
+                    ellipsesExplanation.visible(true);
+                    gsap.to(ellipsesExplanation, { 
+                      opacity: 1, 
+                      duration: config.animDuration * 0.5,
+                      delay: config.animDuration * 0.3
+                    });
                   });
               });
           });
       });
   } else {
     // No animation: just make everything visible
-    [xAxis, yAxis, xLabel, yLabel, pointO, textO, ellipseC, ellipseE, labelC, labelE].forEach(el => {
+    [xAxis, yAxis, xLabel, yLabel, pointO, textO, ellipseC, ellipseE, labelC, labelE, ellipsesExplanation].forEach(el => {
       el.visible(true);
       el.opacity(1);
     });
@@ -230,9 +253,22 @@ function drawStep2(withAnimation = true) {
     config.colors.pointP
   );
   
+  // Add an explanation for point P
+  const pointPExplanation = new Konva.Text({
+    x: px + 25,
+    y: py - 40,
+    text: 'P is any point on ellipse C\nP = (2cos(θ), sin(θ))',
+    fontSize: 14,
+    fill: config.colors.pointP,
+    visible: false,
+    opacity: 0
+  });
+  layer.add(pointPExplanation);
+  
   // Store references
   elements.pointP = pointP;
   elements.textP = textP;
+  elements.pointPExplanation = pointPExplanation;
   
   if (withAnimation) {
     // Animate a "selection" of point P along the ellipse
@@ -269,7 +305,15 @@ function drawStep2(withAnimation = true) {
           onComplete: () => {
             indicator.destroy();
             // Animate point P appearing at the chosen position
-            animatePointAppearing(pointP, textP, config.animDuration * 0.4);
+            animatePointAppearing(pointP, textP, config.animDuration * 0.4)
+              .then(() => {
+                // Show the explanation
+                pointPExplanation.visible(true);
+                gsap.to(pointPExplanation, { 
+                  opacity: 1, 
+                  duration: config.animDuration * 0.5 
+                });
+              });
           }
         });
       }
@@ -278,6 +322,7 @@ function drawStep2(withAnimation = true) {
     // No animation: make elements visible
     pointP.visible(true).opacity(1);
     textP.visible(true).opacity(1);
+    pointPExplanation.visible(true).opacity(1);
     layer.batchDraw();
   }
 }
@@ -336,26 +381,66 @@ function drawStep3(withAnimation = true) {
     config.colors.pointQ
   );
   
+  // Add an explanation for ray OP and point Q
+  const rayExplanation = new Konva.Text({
+    x: (ox + px) / 2 + 20,
+    y: (oy + py) / 2 - 30,
+    text: 'Ray OP',
+    fontSize: 14,
+    fill: config.colors.rayOP,
+    visible: false,
+    opacity: 0
+  });
+  
+  const pointQExplanation = new Konva.Text({
+    x: qx + 25,
+    y: qy - 40,
+    text: 'Q is where ray OP intersects ellipse E\nQ = (4cos(θ), 2sin(θ)) = 2P',
+    fontSize: 14,
+    fill: config.colors.pointQ,
+    visible: false,
+    opacity: 0
+  });
+  
   // Add elements to the layer
-  layer.add(rayOP);
+  layer.add(rayOP, rayExplanation, pointQExplanation);
   
   // Store references
   elements.rayOP = rayOP;
   elements.pointQ = pointQ;
   elements.textQ = textQ;
+  elements.rayExplanation = rayExplanation;
+  elements.pointQExplanation = pointQExplanation;
   
   if (withAnimation) {
     // Animate drawing the ray
     animateDrawLine(rayOP, config.animDuration * 0.7)
       .then(() => {
+        // Show ray explanation
+        rayExplanation.visible(true);
+        gsap.to(rayExplanation, { 
+          opacity: 1, 
+          duration: config.animDuration * 0.3 
+        });
+        
         // After ray is drawn, animate point Q appearing
-        animatePointAppearing(pointQ, textQ, config.animDuration * 0.4, 0.1);
+        animatePointAppearing(pointQ, textQ, config.animDuration * 0.4, 0.1)
+          .then(() => {
+            // Show point Q explanation
+            pointQExplanation.visible(true);
+            gsap.to(pointQExplanation, { 
+              opacity: 1, 
+              duration: config.animDuration * 0.5 
+            });
+          });
       });
   } else {
     // No animation: make elements visible
     rayOP.visible(true).opacity(1);
     pointQ.visible(true).opacity(1);
     textQ.visible(true).opacity(1);
+    rayExplanation.visible(true).opacity(1);
+    pointQExplanation.visible(true).opacity(1);
     layer.batchDraw();
   }
 }
@@ -388,13 +473,37 @@ function drawStep4(withAnimation = true) {
   const qx = config.pointQ.x;
   const qy = config.pointQ.y;
   
+  // Add explanation of the algebraic calculation
+  const algebraicExplanation = new Konva.Text({
+    x: config.origin.x,
+    y: config.origin.y - config.ellipseE.b * config.scale - 80,
+    text: 'For any point P on ellipse C, the ray OP intersects ellipse E\nat point Q where Q = 2P',
+    fontSize: 16,
+    fontStyle: 'bold',
+    fill: config.colors.ratioHighlight,
+    align: 'center',
+    width: 400,
+    visible: false,
+    opacity: 0
+  });
+  algebraicExplanation.offsetX(algebraicExplanation.width() / 2);
+  layer.add(algebraicExplanation);
+  elements.algebraicExplanation = algebraicExplanation;
+  
   if (withAnimation) {
     // Animate the calculation with visual indicators
     animateRatioCalculation(
       { x: ox, y: oy }, // Point O
       { x: px, y: py }, // Point P
       { x: qx, y: qy }  // Point Q
-    );
+    ).then(() => {
+      // Show the algebraic explanation
+      algebraicExplanation.visible(true);
+      gsap.to(algebraicExplanation, { 
+        opacity: 1, 
+        duration: config.animDuration * 0.5 
+      });
+    });
   } else {
     // Just display the ratio without animation
     const distOP = Math.sqrt(Math.pow(px - ox, 2) + Math.pow(py - oy, 2));
@@ -409,6 +518,10 @@ function drawStep4(withAnimation = true) {
       ratioValue.textContent = ratio.toFixed(2);
       ratioDisplay.style.display = 'block';
     }
+    
+    // Show the algebraic explanation
+    algebraicExplanation.visible(true).opacity(1);
+    layer.batchDraw();
   }
 }
 
@@ -423,6 +536,23 @@ function drawStep5(withAnimation = true) {
     showStepExplanation("Step 5: Demonstrate that the ratio |OQ|/|OP| = 2 is constant for any point P on ellipse C");
   }
   
+  // Add a final mathematical explanation
+  const finalExplanation = new Konva.Text({
+    x: config.origin.x,
+    y: config.stageHeight - 50,
+    text: 'This constant ratio of 2 occurs because ellipse E is exactly twice the size of ellipse C\nin both dimensions, relative to the origin O.',
+    fontSize: 16,
+    fontStyle: 'bold',
+    fill: '#333',
+    align: 'center',
+    width: 500,
+    visible: false,
+    opacity: 0
+  });
+  finalExplanation.offsetX(finalExplanation.width() / 2);
+  layer.add(finalExplanation);
+  elements.finalExplanation = finalExplanation;
+  
   // Hide the ratio display temporarily if we'll replace it with an animated proof
   if (withAnimation) {
     const ratioDisplay = document.getElementById('ratio-display');
@@ -434,6 +564,13 @@ function drawStep5(withAnimation = true) {
     // Animate demonstration that this ratio is constant
     demonstrateConstantRatio(config.animDuration)
       .then(() => {
+        // Show final explanation
+        finalExplanation.visible(true);
+        gsap.to(finalExplanation, { 
+          opacity: 1, 
+          duration: config.animDuration * 0.5 
+        });
+        
         // After demonstration, enable dragging of point P
         makePointPDraggable();
         
@@ -444,6 +581,8 @@ function drawStep5(withAnimation = true) {
       });
   } else {
     // No animation: just make point P draggable
+    finalExplanation.visible(true).opacity(1);
     makePointPDraggable();
+    layer.batchDraw();
   }
 }

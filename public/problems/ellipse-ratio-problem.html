@@ -215,6 +215,102 @@
       background-color: #e8f5e9;
       border-left-color: #4caf50;
     }
+    
+    /* Math explanation button */
+    .math-button {
+      background-color: #2196f3;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      text-align: center;
+      font-size: 16px;
+      margin: 10px 0;
+      cursor: pointer;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+    
+    .math-button:hover {
+      background-color: #1976d2;
+    }
+    
+    /* Math explanation panel */
+    .math-explanation-panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      max-width: 800px;
+      max-height: 80vh;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      z-index: 1000;
+      overflow-y: auto;
+      display: none;
+    }
+    
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .panel-header h3 {
+      margin: 0;
+      color: #333;
+    }
+    
+    .close-button {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+    
+    .close-button:hover {
+      color: #333;
+    }
+    
+    .math-content {
+      padding: 10px 0;
+    }
+    
+    .math-step {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .math-step:last-child {
+      border-bottom: none;
+    }
+    
+    .math-step h4 {
+      color: #2196f3;
+      margin-bottom: 10px;
+    }
+    
+    .step-content {
+      line-height: 1.5;
+    }
+    
+    .math {
+      font-family: 'Times New Roman', serif;
+      background-color: #f9f9f9;
+      padding: 5px 10px;
+      border-radius: 4px;
+      margin: 5px 0;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -257,6 +353,9 @@
         <!-- Auto mode button -->
         <button id="auto-mode-button" class="auto-button">Start Auto Demo</button>
         
+        <!-- Mathematical explanation button -->
+        <button id="show-math-button" class="math-button">Show Mathematical Proof</button>
+        
         <ul id="steps-list">
           <li data-step="1" class="active">
             <strong>1. Draw the coordinate system and ellipses</strong>
@@ -297,6 +396,17 @@
     <div id="controls-container">
       Shortcuts: <kbd>1</kbd>-<kbd>5</kbd> Steps | <kbd>C</kbd> Clear | <kbd>D</kbd> Drag Mode
     </div>
+    
+    <!-- Mathematical Explanation Panel -->
+    <div id="math-explanation" class="math-explanation-panel">
+      <div class="panel-header">
+        <h3>Mathematical Proof: Why is |OQ|/|OP| = 2?</h3>
+        <button id="close-math-panel" class="close-button">×</button>
+      </div>
+      <div id="math-content" class="math-content">
+        <!-- Content will be populated by JavaScript -->
+      </div>
+    </div>
   </main>
 
   <footer>
@@ -314,6 +424,7 @@
   <script src="/js/problems/ellipse-ratio-problem/utils/animation-helpers.js"></script>
   <script src="/js/problems/ellipse-ratio-problem/interactivity.js"></script>
   <script src="/js/problems/ellipse-ratio-problem/step-functions.js"></script>
+  <script src="/js/problems/ellipse-ratio-problem/math-solution.js"></script>
   <script src="/js/problems/ellipse-ratio-problem/index.js"></script>
 </body>
 </html>
