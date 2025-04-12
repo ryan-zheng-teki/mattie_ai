@@ -335,10 +335,11 @@ function createChargeIndicator(charge, position) {
     const isPositive = charge.startsWith('+');
     const chargeNumber = parseInt(charge.substring(1)) || 1;
     
-    // Create a proper "+" or "-" sign using line segments instead of a sphere
+    // Create a proper "+" or "-" sign using line segments
     const indicatorGroup = new THREE.Group();
-    const lineWidth = 0.1;
-    const lineLength = 0.8;
+    const lineWidth = 0.15;              // Increased width
+    const lineLength = 1.2;              // Increased length
+    const spacing = lineLength * 1.5;    // Increased spacing between indicators
     const chargeColor = isPositive ? POSITIVE_INDICATOR_COLOR : NEGATIVE_INDICATOR_COLOR;
     
     const lineMaterial = new THREE.MeshBasicMaterial({ 
@@ -347,55 +348,51 @@ function createChargeIndicator(charge, position) {
         emissiveIntensity: 1.0
     });
     
-    if (isPositive) {
-        // Create "+" sign using two crossed rectangles
-        const horizontalGeometry = new THREE.BoxGeometry(lineLength, lineWidth, lineWidth);
-        const verticalGeometry = new THREE.BoxGeometry(lineWidth, lineLength, lineWidth);
-        
-        const horizontalLine = new THREE.Mesh(horizontalGeometry, lineMaterial);
-        const verticalLine = new THREE.Mesh(verticalGeometry, lineMaterial);
-        
-        indicatorGroup.add(horizontalLine);
-        indicatorGroup.add(verticalLine);
-        
-        // Add more + signs if charge is greater than 1
-        if (chargeNumber > 1) {
-            for (let i = 1; i < chargeNumber; i++) {
-                const additionalHLine = new THREE.Mesh(horizontalGeometry.clone(), lineMaterial.clone());
-                const additionalVLine = new THREE.Mesh(verticalGeometry.clone(), lineMaterial.clone());
-                
-                additionalHLine.position.x = i * (lineLength * 0.7);
-                additionalVLine.position.x = i * (lineLength * 0.7);
-                
-                indicatorGroup.add(additionalHLine);
-                indicatorGroup.add(additionalVLine);
-            }
-        }
-    } else {
-        // Create "-" sign using a single rectangle
-        const horizontalGeometry = new THREE.BoxGeometry(lineLength, lineWidth, lineWidth);
-        const horizontalLine = new THREE.Mesh(horizontalGeometry, lineMaterial);
-        indicatorGroup.add(horizontalLine);
-        
-        // Add more - signs if charge is greater than 1
-        if (chargeNumber > 1) {
-            for (let i = 1; i < chargeNumber; i++) {
-                const additionalLine = new THREE.Mesh(horizontalGeometry.clone(), lineMaterial.clone());
-                additionalLine.position.x = i * (lineLength * 0.7);
-                indicatorGroup.add(additionalLine);
-            }
+    // Create all charge indicators separated in space
+    for (let i = 0; i < chargeNumber; i++) {
+        if (isPositive) {
+            // Create "+" sign using two crossed rectangles
+            const horizontalGeometry = new THREE.BoxGeometry(lineLength, lineWidth, lineWidth);
+            const verticalGeometry = new THREE.BoxGeometry(lineWidth, lineLength, lineWidth);
+            
+            const horizontalLine = new THREE.Mesh(horizontalGeometry, lineMaterial.clone());
+            const verticalLine = new THREE.Mesh(verticalGeometry, lineMaterial.clone());
+            
+            // Group for a single + sign
+            const plusSignGroup = new THREE.Group();
+            plusSignGroup.add(horizontalLine);
+            plusSignGroup.add(verticalLine);
+            
+            // Position this + sign with proper spacing
+            plusSignGroup.position.x = i * spacing;
+            
+            indicatorGroup.add(plusSignGroup);
+        } else {
+            // Create "-" sign using a single rectangle
+            const horizontalGeometry = new THREE.BoxGeometry(lineLength, lineWidth, lineWidth);
+            const horizontalLine = new THREE.Mesh(horizontalGeometry, lineMaterial.clone());
+            
+            // Position this - sign with proper spacing
+            horizontalLine.position.x = i * spacing;
+            
+            indicatorGroup.add(horizontalLine);
         }
     }
     
-    // Position the indicator in a more obvious location - above and to the right of the nucleus
+    // Center the entire group based on its total width
+    const totalWidth = (chargeNumber - 1) * spacing;
+    indicatorGroup.position.x -= totalWidth / 2;
+    
+    // Position the indicators in a more visible location
+    // Top-center of the atom instead of top-right
     indicatorGroup.position.set(
-        position.x + NUCLEUS_RADIUS * 2, 
-        position.y + NUCLEUS_RADIUS * 2,
+        position.x, 
+        position.y + SHELL_RADIUS_BASE + 2.5, // Position above the outer shell
         position.z
     );
     
     // Scale the indicator to be more visible
-    indicatorGroup.scale.set(1.5, 1.5, 1.5);
+    indicatorGroup.scale.set(2.0, 2.0, 2.0);  // Larger scale for better visibility
     
     // Add a small glowing effect to the nucleus to reinforce the charge
     if (nucleusObject) {
