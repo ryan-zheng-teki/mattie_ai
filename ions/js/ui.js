@@ -1,7 +1,7 @@
 // UI related functions and event handlers
 import * as THREE from 'three';
 import { elements, quizQuestions, SHELL_COLORS } from './elements-data.js';
-import { updateVisualization } from './visualization.js';
+import { updateVisualization, updateElectronSpeed } from './visualization.js';
 import { animateIonization } from './animation.js';
 
 // Global state
@@ -9,6 +9,7 @@ let isMinimalView = true;
 let currentElement = null;
 let currentState = 'neutral';
 let narrationTimeout = null;
+let electronSpeed = 0.1; // Default electron speed - reduced from 0.3 to 0.1
 
 // Initialize UI components
 export function initUI() {
@@ -26,8 +27,25 @@ export function initUI() {
     document.getElementById('state-select').addEventListener('change', onStateChange);
     document.getElementById('animate-button').addEventListener('click', () => animateIonization());
     
+    // Set up speed control
+    setupSpeedControl();
+    
     // Set up hover tooltips for the visualization
     setupHoverTooltips();
+}
+
+// Set up speed control
+function setupSpeedControl() {
+    const speedControl = document.getElementById('speed-control');
+    
+    // Set initial value
+    speedControl.value = electronSpeed;
+    
+    // Add change event listener
+    speedControl.addEventListener('input', (e) => {
+        electronSpeed = parseFloat(e.target.value);
+        updateElectronSpeed(electronSpeed);
+    });
 }
 
 // Set up tab navigation
@@ -299,6 +317,7 @@ export function getUIState() {
     return {
         isMinimalView,
         currentElement,
-        currentState
+        currentState,
+        electronSpeed
     };
 }

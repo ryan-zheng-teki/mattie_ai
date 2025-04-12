@@ -104,6 +104,40 @@ select {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
+/* Speed control slider */
+#speed-control {
+    width: 120px;
+    height: 10px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--text-light);
+    outline: none;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: all 0.2s;
+}
+
+#speed-control::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+#speed-control::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
 button {
     padding: 8px 15px;
     border: none;
@@ -644,6 +678,10 @@ canvas {
     .control-group label {
         margin-right: 0;
         margin-bottom: 5px;
+    }
+    
+    #speed-control {
+        width: 100%;
     }
     
     .animation-container {

@@ -15,6 +15,7 @@ let electrons = [];
 let nucleusObject = null;
 let chargeIndicator = null;
 export let isFullscreen = false;
+let currentSpeedMultiplier = 0.1; // Default speed setting - reduced from 0.3 to 0.1
 
 // Initialize the visualization scene
 export function initVisualization() {
@@ -66,7 +67,23 @@ export function initVisualization() {
     // Set up window resize handler
     window.addEventListener('resize', onWindowResize, false);
     
+    // Initialize speed setting from UI
+    updateElectronSpeed(document.getElementById('speed-control').value);
+    
     console.log("Visualization initialization complete.");
+}
+
+// Update electron speed from UI
+export function updateElectronSpeed(speedValue) {
+    currentSpeedMultiplier = parseFloat(speedValue);
+    console.log(`Electron speed updated to: ${currentSpeedMultiplier}`);
+    
+    // Update existing electrons with new speed
+    electrons.forEach(electron => {
+        const baseSpeed = ELECTRON_SPEED_MULTIPLIER / (electron.radius || 1);
+        electron.phiSpeed = baseSpeed * currentSpeedMultiplier;
+        electron.thetaSpeed = baseSpeed * 0.7 * currentSpeedMultiplier;
+    });
 }
 
 // Create a visualization of an atom or ion
@@ -178,6 +195,9 @@ function addOrbitingElectrons(centerPosition, count, orbitRadius, shellIndex = 0
     // Get electron color based on shell index (with fallback)
     const electronColor = ELECTRON_COLORS[shellIndex] || ELECTRON_COLORS[ELECTRON_COLORS.length - 1];
     
+    // Base speed adjusted by current multiplier
+    const baseSpeed = ELECTRON_SPEED_MULTIPLIER / (orbitRadius || 1);
+    
     for (let i = 0; i < count; i++) {
         const electronGeometry = new THREE.SphereGeometry(ELECTRON_RADIUS, 16, 16);
         const electronMaterial = new THREE.MeshPhongMaterial({ 
@@ -203,8 +223,8 @@ function addOrbitingElectrons(centerPosition, count, orbitRadius, shellIndex = 0
             radius: orbitRadius,
             phi: phi,
             theta: theta,
-            phiSpeed: ELECTRON_SPEED_MULTIPLIER / (orbitRadius || 1),
-            thetaSpeed: ELECTRON_SPEED_MULTIPLIER * 0.7 / (orbitRadius || 1),
+            phiSpeed: baseSpeed * currentSpeedMultiplier, // Apply current speed multiplier
+            thetaSpeed: baseSpeed * 0.7 * currentSpeedMultiplier, // Apply current speed multiplier
             isAnimating: false,
             center: centerPosition,
             color: electronColor
@@ -509,7 +529,7 @@ export function animate(time) {
     lastTime = timeSeconds;
     
     controls.update();
-    TWEEN.update(time); // Added this line to update TWEEN animations
+    TWEEN.update(time); // Update TWEEN animations
     
     // Only update electron positions if there are electrons to animate
     if (electrons.length > 0 && !isNaN(deltaTime) && deltaTime > 0) {
