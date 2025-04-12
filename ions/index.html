@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ion Formation Visualizer</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
@@ -40,6 +40,10 @@
             <button id="animate-button" class="primary-button">
                 <i class="fas fa-play-circle"></i> Show Ionization
             </button>
+            
+            <button id="view-toggle" class="toggle-button" title="Toggle Detail Level">
+                <i class="fas fa-eye"></i> <span id="view-mode-text">Simple View</span>
+            </button>
         </div>
         
         <div class="tabs-container">
@@ -50,31 +54,73 @@
         </div>
         
         <div class="tab-content active" id="visualization-tab">
-            <div id="info-panel">
-                <div id="element-info" class="info-box"></div>
-                <div id="charge-info" class="info-box"></div>
-            </div>
-            
-            <div id="visualization-container">
-                <!-- Three.js canvas will be inserted here -->
-                <div id="animation-labels"></div>
-                <div id="animation-narration"></div>
-                <div class="animation-controls">
-                    <button id="step-by-step-toggle" title="Step-by-Step Mode">
-                        <i class="fas fa-shoe-prints"></i> Step-by-Step
-                    </button>
-                    <button id="next-step" title="Next Step" disabled>
-                        <i class="fas fa-step-forward"></i> Next
-                    </button>
-                    <button id="zoom-in" title="Zoom In">
-                        <i class="fas fa-search-plus"></i>
-                    </button>
-                    <button id="zoom-out" title="Zoom Out">
-                        <i class="fas fa-search-minus"></i>
-                    </button>
-                    <button id="fullscreen-button" title="Fullscreen">
-                        <i class="fas fa-expand"></i>
-                    </button>
+            <div class="split-view">
+                <div class="animation-container">
+                    <div id="visualization-container">
+                        <!-- Three.js canvas will be inserted here -->
+                        <div id="temporary-labels"></div>
+                        <div id="animation-narration"></div>
+                        <div class="animation-controls">
+                            <button id="step-by-step-toggle" title="Step-by-Step Mode">
+                                <i class="fas fa-shoe-prints"></i> Step-by-Step
+                            </button>
+                            <button id="next-step" title="Next Step" disabled>
+                                <i class="fas fa-step-forward"></i> Next
+                            </button>
+                            <button id="zoom-in" title="Zoom In">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button id="zoom-out" title="Zoom Out">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button id="fullscreen-button" title="Fullscreen">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="explanation-panel">
+                    <div class="panel-section">
+                        <h3>Element Info</h3>
+                        <div id="element-info" class="info-box"></div>
+                    </div>
+                    
+                    <div class="panel-section">
+                        <h3>What's Happening</h3>
+                        <div id="explanation-box"></div>
+                    </div>
+                    
+                    <div class="panel-section">
+                        <h3>Legend</h3>
+                        <div class="legend-items">
+                            <div class="legend-item">
+                                <div class="icon nucleus-icon">●</div>
+                                <span>Nucleus</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="icon electron-icon">•</div>
+                                <span>Electron</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="icon shell-icon">◯</div>
+                                <span>Electron Shell</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="icon positive-icon">+</div>
+                                <span>Positive Charge</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="icon negative-icon">−</div>
+                                <span>Negative Charge</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-section">
+                        <h3>Shell Status</h3>
+                        <div id="shell-status"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -163,7 +209,11 @@
         }
     </script>
 
-    <!-- Main application script -->
-    <script type="module" src="main.js"></script>
+    <!-- Application scripts -->
+    <script type="module" src="js/elements-data.js"></script>
+    <script type="module" src="js/ui.js"></script>
+    <script type="module" src="js/visualization.js"></script>
+    <script type="module" src="js/animation.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
