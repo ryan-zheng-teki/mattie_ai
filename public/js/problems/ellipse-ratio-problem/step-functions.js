@@ -1,58 +1,58 @@
 /**
- * Step functions for the Ellipse Ratio Problem visualization
- * These functions draw elements incrementally.
+ * 椭圆比值问题可视化的步骤函数
+ * 这些函数逐步绘制元素。
  */
 
-// Helper to check prerequisites and call previous step if needed
+// 检查先决条件并在需要时调用前置步骤的辅助函数
 function ensurePrerequisites(requiredStep, currentStepFunction) {
     if (currentActiveStep < requiredStep) {
-        console.warn(`Prerequisite Step ${requiredStep} not met for ${currentStepFunction}. Drawing prerequisites.`);
-        // Find the function for the required step and call it without animation
+        console.warn(`步骤 ${requiredStep} 的先决条件未满足于 ${currentStepFunction}。绘制先决条件。`);
+        // 为所需步骤查找函数并非动画调用
         const prerequisiteFunctionName = `drawStep${requiredStep}`;
         if (typeof window[prerequisiteFunctionName] === 'function') {
-            window[prerequisiteFunctionName](false); // Draw prerequisite non-animated
+            window[prerequisiteFunctionName](false); // 无动画绘制先决条件
         } else {
-            console.error(`Error: Prerequisite function ${prerequisiteFunctionName} not found.`);
-            return false; // Indicate failure
+            console.error(`错误：找不到先决条件函数 ${prerequisiteFunctionName}。`);
+            return false; // 表示失败
         }
     }
-    // Additionally check if the core elements of the prerequisite step actually exist
+    // 另外检查先决条件步骤的核心元素是否实际存在
     const prerequisiteKeys = stepElementKeys[requiredStep];
     if (prerequisiteKeys && prerequisiteKeys.length > 0) {
-        const firstKey = prerequisiteKeys[0]; // Check existence of a key element
+        const firstKey = prerequisiteKeys[0]; // 检查关键元素的存在
         if (!elements[firstKey]) {
-             console.error(`Error: Prerequisite elements for Step ${requiredStep} seem missing even after drawing.`);
-             // Attempt to draw again? Or throw error? For robustness, let's try drawing again.
+             console.error(`错误：即使在绘制后，步骤 ${requiredStep} 的先决条件元素似乎丢失。`);
+             // 尝试再次绘制？或抛出错误？为了稳健性，让我们尝试再次绘制。
              const prerequisiteFunctionName = `drawStep${requiredStep}`;
              if (typeof window[prerequisiteFunctionName] === 'function') {
                  window[prerequisiteFunctionName](false); 
-                 if (!elements[firstKey]) return false; // Failed again
+                 if (!elements[firstKey]) return false; // 再次失败
              } else {
                  return false;
              }
         }
     }
-    return true; // Prerequisites met
+    return true; // 先决条件满足
 }
 
-// Step 1: Draw coordinate system and ellipses C and E
+// 步骤 1：绘制坐标系和椭圆 C 和 E
 function drawStep1(withAnimation = true) {
-  // Idempotency Check: If step 1 elements already exist, do nothing.
+  // 幂等性检查：如果步骤 1 的元素已经存在，什么都不做。
   if (elements.xAxis && elements.ellipseC && elements.ellipseE) {
-    console.log("Step 1 elements already exist. Skipping draw.");
+    console.log("步骤 1 的元素已存在。跳过绘制。");
     if (withAnimation) {
-      showStepExplanation("Step 1: Draw the coordinate system and the two ellipses C and E", 0.1);
+      showStepExplanation("步骤 1：绘制坐标系和两个椭圆 C 和 E", 0.1);
     }
     return;
   }
   
-  console.log(`Executing Step 1 (Animate: ${withAnimation})`);
+  console.log(`执行步骤 1 (动画：${withAnimation})`);
   
   if (withAnimation) {
-    showStepExplanation("Step 1: Draw the coordinate system and the two ellipses C and E");
+    showStepExplanation("步骤 1：绘制坐标系和两个椭圆 C 和 E");
   }
   
-  // Draw coordinate system (x and y axes)
+  // 绘制坐标系（x 和 y 轴）
   const xAxis = new Konva.Line({
     points: [0, config.origin.y, stage.width(), config.origin.y],
     stroke: config.colors.axes,
@@ -67,7 +67,7 @@ function drawStep1(withAnimation = true) {
     visible: false
   });
   
-  // Add x and y axis labels
+  // 添加 x 和 y 轴标签
   const xLabel = new Konva.Text({
     x: stage.width() - 20,
     y: config.origin.y + 10,
@@ -88,16 +88,16 @@ function drawStep1(withAnimation = true) {
     visible: false
   });
   
-  // Add origin point and label
+  // 添加原点和标签
   const { point: pointO, text: textO } = createPointWithLabel(
     config.origin,
     'O',
     config.colors.pointO,
-    -20, // X offset
-    10    // Y offset
+    -20, // X 偏移
+    10    // Y 偏移
   );
   
-  // Create Ellipse C
+  // 创建椭圆 C
   const ellipseC = new Konva.Ellipse({
     x: config.origin.x,
     y: config.origin.y,
@@ -109,7 +109,7 @@ function drawStep1(withAnimation = true) {
     visible: false
   });
   
-  // Create Ellipse E
+  // 创建椭圆 E
   const ellipseE = new Konva.Ellipse({
     x: config.origin.x,
     y: config.origin.y,
@@ -121,7 +121,7 @@ function drawStep1(withAnimation = true) {
     visible: false
   });
   
-  // Create ellipse labels
+  // 创建椭圆标签
   const labelC = new Konva.Text({
     x: config.origin.x + config.ellipseC.a * config.scale + 5,
     y: config.origin.y,
@@ -140,11 +140,11 @@ function drawStep1(withAnimation = true) {
     visible: false
   });
   
-  // Add additional explanation about the ellipses
+  // 添加关于椭圆的额外解释
   const ellipsesExplanation = new Konva.Text({
     x: config.origin.x,
     y: config.origin.y + config.ellipseE.b * config.scale + 30,
-    text: 'Note: Ellipse E is exactly twice the size of ellipse C in both x and y dimensions',
+    text: '注意：椭圆 E 的 x 和 y 尺寸均是椭圆 C 的两倍',
     fontSize: config.styles.labelFontSize - 2,
     fill: '#333',
     align: 'center',
@@ -154,10 +154,10 @@ function drawStep1(withAnimation = true) {
   });
   ellipsesExplanation.offsetX(ellipsesExplanation.width() / 2);
   
-  // Add elements to the layer
+  // 将元素添加到图层
   layer.add(xAxis, yAxis, xLabel, yLabel, ellipseC, ellipseE, labelC, labelE, ellipsesExplanation);
   
-  // Store references
+  // 存储引用
   elements.xAxis = xAxis;
   elements.yAxis = yAxis;
   elements.xLabel = xLabel;
@@ -171,7 +171,7 @@ function drawStep1(withAnimation = true) {
   elements.ellipsesExplanation = ellipsesExplanation;
   
   if (withAnimation) {
-    // Animate axes appearing
+    // 动画显示坐标轴
     xAxis.visible(true);
     yAxis.visible(true);
     
@@ -183,22 +183,22 @@ function drawStep1(withAnimation = true) {
       .to(xLabel, { visible: true, opacity: 1, duration: config.animDuration * 0.3 })
       .to(yLabel, { visible: true, opacity: 1, duration: config.animDuration * 0.3 }, "-=0.1")
       .then(() => {
-        // Animate origin point
+        // 动画显示原点
         animatePointAppearing(pointO, textO, config.animDuration * 0.4)
           .then(() => {
-            // Animate ellipses
+            // 动画显示椭圆
             animateEllipseDrawing(ellipseC, config.animDuration * 0.6)
               .then(() => {
                 labelC.visible(true);
                 gsap.to(labelC, { opacity: 1, duration: config.animDuration * 0.3 });
                 
-                // Show ellipse E after ellipse C
+                // 椭圆 C 之后显示椭圆 E
                 animateEllipseDrawing(ellipseE, config.animDuration * 0.6, config.animDuration * 0.1)
                   .then(() => {
                     labelE.visible(true);
                     gsap.to(labelE, { opacity: 1, duration: config.animDuration * 0.3 });
                     
-                    // Show the additional explanation
+                    // 显示额外的解释
                     ellipsesExplanation.visible(true);
                     gsap.to(ellipsesExplanation, { 
                       opacity: 1, 
@@ -210,7 +210,7 @@ function drawStep1(withAnimation = true) {
           });
       });
   } else {
-    // No animation: just make everything visible
+    // 无动画：仅使所有元素可见
     [xAxis, yAxis, xLabel, yLabel, pointO, textO, ellipseC, ellipseE, labelC, labelE, ellipsesExplanation].forEach(el => {
       el.visible(true);
       el.opacity(1);
@@ -219,45 +219,45 @@ function drawStep1(withAnimation = true) {
   }
 }
 
-// Step 2: Select a point P on ellipse C
+// 步骤 2：在椭圆 C 上选择点 P
 function drawStep2(withAnimation = true) {
-  // Prerequisite check
+  // 先决条件检查
   if (!ensurePrerequisites(1, 'drawStep2')) return;
   
-  // Idempotency Check
+  // 幂等性检查
   if (elements.pointP && elements.textP) {
-    console.log("Step 2 elements already exist. Skipping draw.");
+    console.log("步骤 2 的元素已存在。跳过绘制。");
     if (withAnimation) {
-      showStepExplanation("Step 2: Select a point P on ellipse C", 0.1);
+      showStepExplanation("步骤 2：在椭圆 C 上选择点 P", 0.1);
     }
     return;
   }
-  console.log(`Executing Step 2 (Animate: ${withAnimation})`);
+  console.log(`执行步骤 2 (动画：${withAnimation})`);
   
   if (withAnimation) {
-    showStepExplanation("Step 2: Select a point P on ellipse C");
+    showStepExplanation("步骤 2：在椭圆 C 上选择点 P");
   }
   
-  // Calculate initial position for point P based on configured angle
+  // 根据配置的角度计算点 P 的初始位置
   const angle = config.initialAngle;
   const px = config.origin.x + config.scale * config.ellipseC.a * Math.cos(angle);
   const py = config.origin.y - config.scale * config.ellipseC.b * Math.sin(angle);
   
-  // Update config with the point P position
+  // 用点 P 的位置更新配置
   config.pointP = { x: px, y: py };
   
-  // Create point P and its label
+  // 创建点 P 及其标签
   const { point: pointP, text: textP } = createPointWithLabel(
     config.pointP,
     'P',
     config.colors.pointP
   );
   
-  // Add an explanation for point P
+  // 为点 P 添加解释
   const pointPExplanation = new Konva.Text({
     x: px + 25,
     y: py - 40,
-    text: 'P is any point on ellipse C\nP = (2cos(θ), sin(θ))',
+    text: 'P 是椭圆 C 上的任意点\nP = (2cos(θ), sin(θ))',
     fontSize: 14,
     fill: config.colors.pointP,
     visible: false,
@@ -265,14 +265,14 @@ function drawStep2(withAnimation = true) {
   });
   layer.add(pointPExplanation);
   
-  // Store references
+  // 存储引用
   elements.pointP = pointP;
   elements.textP = textP;
   elements.pointPExplanation = pointPExplanation;
   
   if (withAnimation) {
-    // Animate a "selection" of point P along the ellipse
-    // Create a temporary indicator that travels along ellipse C
+    // 沿椭圆动画"选择"点 P
+    // 创建一个沿椭圆 C 移动的临时指示器
     const indicator = new Konva.Circle({
       x: config.origin.x + config.scale * config.ellipseC.a,
       y: config.origin.y,
@@ -284,12 +284,12 @@ function drawStep2(withAnimation = true) {
     });
     layer.add(indicator);
     
-    // Animate the indicator traveling around part of the ellipse before stopping at P
+    // 动画指示器沿椭圆部分移动，最后停在 P 处
     gsap.to({}, {
       duration: config.animDuration * 1.2,
       onUpdate: function() {
         const progress = this.progress();
-        // Travel from 0 to the desired angle
+        // 从 0 移动到所需角度
         const currentAngle = progress * angle;
         const x = config.origin.x + config.scale * config.ellipseC.a * Math.cos(currentAngle);
         const y = config.origin.y - config.scale * config.ellipseC.b * Math.sin(currentAngle);
@@ -298,16 +298,16 @@ function drawStep2(withAnimation = true) {
         layer.batchDraw();
       },
       onComplete: () => {
-        // Fade out the indicator
+        // 淡出指示器
         gsap.to(indicator, {
           opacity: 0,
           duration: config.animDuration * 0.3,
           onComplete: () => {
             indicator.destroy();
-            // Animate point P appearing at the chosen position
+            // 在选定位置动画显示点 P
             animatePointAppearing(pointP, textP, config.animDuration * 0.4)
               .then(() => {
-                // Show the explanation
+                // 显示解释
                 pointPExplanation.visible(true);
                 gsap.to(pointPExplanation, { 
                   opacity: 1, 
@@ -319,7 +319,7 @@ function drawStep2(withAnimation = true) {
       }
     });
   } else {
-    // No animation: make elements visible
+    // 无动画：使元素可见
     pointP.visible(true).opacity(1);
     textP.visible(true).opacity(1);
     pointPExplanation.visible(true).opacity(1);
@@ -327,46 +327,46 @@ function drawStep2(withAnimation = true) {
   }
 }
 
-// Step 3: Draw ray OP and find intersection point Q with ellipse E
+// 步骤 3：绘制射线 OP 并找出与椭圆 E 的交点 Q
 function drawStep3(withAnimation = true) {
-  // Prerequisite check
+  // 先决条件检查
   if (!ensurePrerequisites(2, 'drawStep3')) return;
   
-  // Idempotency Check
+  // 幂等性检查
   if (elements.rayOP && elements.pointQ) {
-    console.log("Step 3 elements already exist. Skipping draw.");
+    console.log("步骤 3 的元素已存在。跳过绘制。");
     if (withAnimation) {
-      showStepExplanation("Step 3: Draw ray OP and find its intersection Q with ellipse E", 0.1);
+      showStepExplanation("步骤 3：绘制射线 OP 并找出其与椭圆 E 的交点 Q", 0.1);
     }
     return;
   }
-  console.log(`Executing Step 3 (Animate: ${withAnimation})`);
+  console.log(`执行步骤 3 (动画：${withAnimation})`);
   
   if (withAnimation) {
-    showStepExplanation("Step 3: Draw ray OP and find its intersection Q with ellipse E");
+    showStepExplanation("步骤 3：绘制射线 OP 并找出其与椭圆 E 的交点 Q");
   }
   
-  // Get coordinates
+  // 获取坐标
   const ox = config.origin.x;
   const oy = config.origin.y;
   const px = config.pointP.x;
   const py = config.pointP.y;
   
-  // Calculate the ray vector
+  // 计算射线向量
   const rayVector = { x: px - ox, y: py - oy };
   
-  // Calculate point Q (exactly twice as far along the ray)
+  // 计算点 Q（沿射线正好是 O 到 P 距离的两倍）
   const qx = ox + 2 * rayVector.x;
   const qy = oy + 2 * rayVector.y;
   
-  // Update config point Q
+  // 更新配置中的点 Q
   config.pointQ = { x: qx, y: qy };
   
-  // For visual clarity, extend the ray slightly beyond Q
+  // 为了视觉清晰，将射线稍微延伸超过 Q
   const extendedQx = ox + 2.5 * rayVector.x;
   const extendedQy = oy + 2.5 * rayVector.y;
   
-  // Create ray OP that extends to Q and beyond
+  // 创建延伸到 Q 及其之外的射线 OP
   const rayOP = new Konva.Line({
     points: [ox, oy, extendedQx, extendedQy],
     stroke: config.colors.rayOP,
@@ -374,18 +374,18 @@ function drawStep3(withAnimation = true) {
     visible: false
   });
   
-  // Create point Q and its label
+  // 创建点 Q 及其标签
   const { point: pointQ, text: textQ } = createPointWithLabel(
     config.pointQ,
     'Q',
     config.colors.pointQ
   );
   
-  // Add an explanation for ray OP and point Q
+  // 为射线 OP 和点 Q 添加解释
   const rayExplanation = new Konva.Text({
     x: (ox + px) / 2 + 20,
     y: (oy + py) / 2 - 30,
-    text: 'Ray OP',
+    text: '射线 OP',
     fontSize: 14,
     fill: config.colors.rayOP,
     visible: false,
@@ -395,17 +395,17 @@ function drawStep3(withAnimation = true) {
   const pointQExplanation = new Konva.Text({
     x: qx + 25,
     y: qy - 40,
-    text: 'Q is where ray OP intersects ellipse E\nQ = (4cos(θ), 2sin(θ)) = 2P',
+    text: 'Q 是射线 OP 与椭圆 E 的交点\nQ = (4cos(θ), 2sin(θ)) = 2P',
     fontSize: 14,
     fill: config.colors.pointQ,
     visible: false,
     opacity: 0
   });
   
-  // Add elements to the layer
+  // 将元素添加到图层
   layer.add(rayOP, rayExplanation, pointQExplanation);
   
-  // Store references
+  // 存储引用
   elements.rayOP = rayOP;
   elements.pointQ = pointQ;
   elements.textQ = textQ;
@@ -413,20 +413,20 @@ function drawStep3(withAnimation = true) {
   elements.pointQExplanation = pointQExplanation;
   
   if (withAnimation) {
-    // Animate drawing the ray
+    // 动画绘制射线
     animateDrawLine(rayOP, config.animDuration * 0.7)
       .then(() => {
-        // Show ray explanation
+        // 显示射线解释
         rayExplanation.visible(true);
         gsap.to(rayExplanation, { 
           opacity: 1, 
           duration: config.animDuration * 0.3 
         });
         
-        // After ray is drawn, animate point Q appearing
+        // 射线绘制后，动画显示点 Q
         animatePointAppearing(pointQ, textQ, config.animDuration * 0.4, 0.1)
           .then(() => {
-            // Show point Q explanation
+            // 显示点 Q 解释
             pointQExplanation.visible(true);
             gsap.to(pointQExplanation, { 
               opacity: 1, 
@@ -435,7 +435,7 @@ function drawStep3(withAnimation = true) {
           });
       });
   } else {
-    // No animation: make elements visible
+    // 无动画：使元素可见
     rayOP.visible(true).opacity(1);
     pointQ.visible(true).opacity(1);
     textQ.visible(true).opacity(1);
@@ -445,27 +445,27 @@ function drawStep3(withAnimation = true) {
   }
 }
 
-// Step 4: Calculate and display the ratio |OQ|/|OP|
+// 步骤 4：计算并显示比值 |OQ|/|OP|
 function drawStep4(withAnimation = true) {
-  // Prerequisite check
+  // 先决条件检查
   if (!ensurePrerequisites(3, 'drawStep4')) return;
   
-  // Idempotency Check - using ratio display instead of a specific element
+  // 幂等性检查 - 使用比值显示而非特定元素
   const ratioDisplay = document.getElementById('ratio-display');
   if (ratioDisplay && ratioDisplay.style.display === 'block') {
-    console.log("Step 4 elements already exist. Skipping draw.");
+    console.log("步骤 4 的元素已存在。跳过绘制。");
     if (withAnimation) {
-      showStepExplanation("Step 4: Calculate and display the ratio |OQ|/|OP|", 0.1);
+      showStepExplanation("步骤 4：计算并显示比值 |OQ|/|OP|", 0.1);
     }
     return;
   }
-  console.log(`Executing Step 4 (Animate: ${withAnimation})`);
+  console.log(`执行步骤 4 (动画：${withAnimation})`);
   
   if (withAnimation) {
-    showStepExplanation("Step 4: Calculate and display the ratio |OQ|/|OP|");
+    showStepExplanation("步骤 4：计算并显示比值 |OQ|/|OP|");
   }
   
-  // Get coordinates
+  // 获取坐标
   const ox = config.origin.x;
   const oy = config.origin.y;
   const px = config.pointP.x;
@@ -473,11 +473,11 @@ function drawStep4(withAnimation = true) {
   const qx = config.pointQ.x;
   const qy = config.pointQ.y;
   
-  // Add explanation of the algebraic calculation
+  // 添加代数计算的解释
   const algebraicExplanation = new Konva.Text({
     x: config.origin.x,
     y: config.origin.y - config.ellipseE.b * config.scale - 80,
-    text: 'For any point P on ellipse C, the ray OP intersects ellipse E\nat point Q where Q = 2P',
+    text: '对于椭圆 C 上的任意点 P，射线 OP 与椭圆 E 相交于点 Q，\n其中 Q = 2P',
     fontSize: 16,
     fontStyle: 'bold',
     fill: config.colors.ratioHighlight,
@@ -491,13 +491,13 @@ function drawStep4(withAnimation = true) {
   elements.algebraicExplanation = algebraicExplanation;
   
   if (withAnimation) {
-    // Animate the calculation with visual indicators
+    // 用视觉指示器动画显示计算
     animateRatioCalculation(
-      { x: ox, y: oy }, // Point O
-      { x: px, y: py }, // Point P
-      { x: qx, y: qy }  // Point Q
+      { x: ox, y: oy }, // 点 O
+      { x: px, y: py }, // 点 P
+      { x: qx, y: qy }  // 点 Q
     ).then(() => {
-      // Show the algebraic explanation
+      // 显示代数解释
       algebraicExplanation.visible(true);
       gsap.to(algebraicExplanation, { 
         opacity: 1, 
@@ -505,12 +505,12 @@ function drawStep4(withAnimation = true) {
       });
     });
   } else {
-    // Just display the ratio without animation
+    // 不使用动画仅显示比值
     const distOP = Math.sqrt(Math.pow(px - ox, 2) + Math.pow(py - oy, 2));
     const distOQ = Math.sqrt(Math.pow(qx - ox, 2) + Math.pow(qy - oy, 2));
     const ratio = distOQ / distOP;
     
-    // Update HTML display
+    // 更新 HTML 显示
     const ratioDisplay = document.getElementById('ratio-display');
     const ratioValue = document.getElementById('ratio-value');
     
@@ -519,28 +519,28 @@ function drawStep4(withAnimation = true) {
       ratioDisplay.style.display = 'block';
     }
     
-    // Show the algebraic explanation
+    // 显示代数解释
     algebraicExplanation.visible(true).opacity(1);
     layer.batchDraw();
   }
 }
 
-// Step 5: Demonstrate that ratio |OQ|/|OP| = 2 is constant
+// 步骤 5：证明比值 |OQ|/|OP| = 2 是恒定的
 function drawStep5(withAnimation = true) {
-  // Prerequisite check
+  // 先决条件检查
   if (!ensurePrerequisites(4, 'drawStep5')) return;
   
-  console.log(`Executing Step 5 (Animate: ${withAnimation})`);
+  console.log(`执行步骤 5 (动画：${withAnimation})`);
   
   if (withAnimation) {
-    showStepExplanation("Step 5: Demonstrate that the ratio |OQ|/|OP| = 2 is constant for any point P on ellipse C");
+    showStepExplanation("步骤 5：证明无论点 P 在椭圆 C 上的位置如何，比值 |OQ|/|OP| = 2 始终恒定");
   }
   
-  // Add a final mathematical explanation
+  // 添加最终数学解释
   const finalExplanation = new Konva.Text({
     x: config.origin.x,
     y: config.stageHeight - 50,
-    text: 'This constant ratio of 2 occurs because ellipse E is exactly twice the size of ellipse C\nin both dimensions, relative to the origin O.',
+    text: '这个恒定的比值 2 出现是因为椭圆 E 在两个维度上相对于原点 O\n正好是椭圆 C 的两倍大小。',
     fontSize: 16,
     fontStyle: 'bold',
     fill: '#333',
@@ -553,34 +553,34 @@ function drawStep5(withAnimation = true) {
   layer.add(finalExplanation);
   elements.finalExplanation = finalExplanation;
   
-  // Hide the ratio display temporarily if we'll replace it with an animated proof
+  // 如果将用动画证明替换，暂时隐藏比值显示
   if (withAnimation) {
     const ratioDisplay = document.getElementById('ratio-display');
     if (ratioDisplay) {
-      // We'll show it again after the demonstration
+      // 演示后将再次显示
       ratioDisplay.style.display = 'none';
     }
     
-    // Animate demonstration that this ratio is constant
+    // 动画演示该比值是恒定的
     demonstrateConstantRatio(config.animDuration)
       .then(() => {
-        // Show final explanation
+        // 显示最终解释
         finalExplanation.visible(true);
         gsap.to(finalExplanation, { 
           opacity: 1, 
           duration: config.animDuration * 0.5 
         });
         
-        // After demonstration, enable dragging of point P
+        // 演示后，启用点 P 的拖动
         makePointPDraggable();
         
-        // Show the ratio display again
+        // 再次显示比值显示
         if (ratioDisplay) {
           ratioDisplay.style.display = 'block';
         }
       });
   } else {
-    // No animation: just make point P draggable
+    // 无动画：仅使点 P 可拖动
     finalExplanation.visible(true).opacity(1);
     makePointPDraggable();
     layer.batchDraw();

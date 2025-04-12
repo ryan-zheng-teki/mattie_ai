@@ -1,43 +1,43 @@
 /**
- * Ellipse Ratio Problem Visualization
+ * 椭圆比值问题可视化
  *
- * This visualization demonstrates that for any point P on ellipse C,
- * if ray OP intersects ellipse E at point Q, the ratio |OQ|/|OP| = 2.
+ * 这个可视化演示了对于椭圆 C 上的任意点 P，
+ * 如果射线 OP 与椭圆 E 在点 Q 相交，比值 |OQ|/|OP| = 2。
  */
 
-// --- Global Variables ---
+// --- 全局变量 ---
 let stage, layer, backgroundLayer, gridLayer;
-let elements = {}; // Store Konva objects: { key: KonvaNode }
-let currentActiveStep = 0; // Track the highest step currently displayed
-let isDraggable = false; // Flag to control draggability of points
-let isAutoModeActive = false; // Flag for auto mode state
-let autoModeTimeoutId = null; // Timeout ID for auto mode step progression
-let currentAutoStep = 0; // Current step index in auto mode
+let elements = {}; // 存储 Konva 对象: { key: KonvaNode }
+let currentActiveStep = 0; // 跟踪当前显示的最高步骤
+let isDraggable = false; // 控制点可拖动性的标志
+let isAutoModeActive = false; // 自动模式状态标志
+let autoModeTimeoutId = null; // 自动模式步骤推进的超时 ID
+let currentAutoStep = 0; // 自动模式中的当前步骤索引
 
-// Mapping of step numbers to the element keys they introduce
+// 步骤编号到它们引入的元素键的映射
 const stepElementKeys = {
-  1: ['xAxis', 'yAxis', 'xLabel', 'yLabel', 'pointO', 'textO', 'ellipseC', 'ellipseE', 'labelC', 'labelE'],
-  2: ['pointP', 'textP'],
-  3: ['rayOP', 'pointQ', 'textQ'],
-  4: [], // Ratio calculation doesn't add persistent elements
-  5: ['dragHelp'] // Drag mode adds dragHelp text
-  // Note: Temporary animation elements are not listed here as they destroy themselves.
-  // Note: 'stepExplanation' is managed separately.
+  1: ['xAxis', 'yAxis', 'xLabel', 'yLabel', 'pointO', 'textO', 'ellipseC', 'ellipseE', 'labelC', 'labelE', 'ellipsesExplanation'],
+  2: ['pointP', 'textP', 'pointPExplanation'],
+  3: ['rayOP', 'pointQ', 'textQ', 'rayExplanation', 'pointQExplanation'],
+  4: ['algebraicExplanation'], // 比值计算添加代数解释
+  5: ['dragHelp', 'finalExplanation'] // 拖动模式添加 dragHelp 和最终解释
+  // 注意：临时动画元素未在此列出，因为它们会自行销毁。
+  // 注意：'stepExplanation' 单独管理。
 };
 
-// --- Initialization ---
+// --- 初始化 ---
 document.addEventListener('DOMContentLoaded', () => {
   initKonva();
   initEventListeners();
 
-  // Draw the initial state
+  // 绘制初始状态
   gridLayer.draw();
   backgroundLayer.draw();
   layer.draw();
 
-  // Automatically display step 1 on load after a short delay
+  // 加载后短暂延迟自动显示步骤 1
   setTimeout(() => {
-    // Only navigate if auto mode hasn't already started
+    // 仅在自动模式尚未开始时导航
     if (!isAutoModeActive) {
       navigateToStep(1);
       updateStepUI(1);
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 500);
 });
 
-// Initialize Konva stage and layers
+// 初始化 Konva 舞台和图层
 function initKonva() {
   const stageContainer = document.getElementById('konva-stage-container');
   const stageWidth = stageContainer.clientWidth;
@@ -57,21 +57,21 @@ function initKonva() {
     height: stageHeight,
   });
 
-  // Save dimensions to config
+  // 将尺寸保存到配置中
   config.stageWidth = stageWidth;
   config.stageHeight = stageHeight;
 
-  // Create layers
+  // 创建图层
   layer = new Konva.Layer();
   backgroundLayer = new Konva.Layer();
-  gridLayer = new Konva.Layer(); // For coordinate grid
+  gridLayer = new Konva.Layer(); // 用于坐标网格
 
-  // Add layers to stage in order
+  // 按顺序将图层添加到舞台
   stage.add(backgroundLayer);
-  stage.add(gridLayer); // Grid below main layer
-  stage.add(layer);    // Main content layer
+  stage.add(gridLayer); // 网格位于主图层下方
+  stage.add(layer);    // 主内容图层
 
-  // Create gradient background
+  // 创建渐变背景
   const backgroundRect = new Konva.Rect({
     x: 0,
     y: 0,
@@ -82,44 +82,44 @@ function initKonva() {
       end: { x: stageWidth, y: stageHeight },
       colorStops: [0, config.colors.background[0], 1, config.colors.background[1]]
     },
-    listening: false // Background should not capture events
+    listening: false // 背景不应捕获事件
   });
   backgroundLayer.add(backgroundRect);
 
-  // Set origin to center of stage
+  // 将原点设置为舞台中心
   config.origin = {
     x: stageWidth / 2,
     y: stageHeight / 2
   };
 
-  // Calculate appropriate scale based on stage size
-  // We want the larger ellipse (E) to fit comfortably within the stage
-  const maxRadius = Math.min(stageWidth, stageHeight) / 2 * 0.8; // 80% of half the smaller dimension
+  // 根据舞台大小计算适当的缩放
+  // 我们希望较大的椭圆（E）舒适地适应舞台
+  const maxRadius = Math.min(stageWidth, stageHeight) / 2 * 0.8; // 较小尺寸的一半的 80%
   const largestSemiAxis = Math.max(config.ellipseE.a, config.ellipseE.b);
   config.scale = maxRadius / largestSemiAxis;
 
-  // Create coordinate grid with appropriate spacing
+  // 创建具有适当间距的坐标网格
   createCoordinateGrid();
 }
 
-// Create a coordinate grid with tick marks
+// 创建带刻度的坐标网格
 function createCoordinateGrid() {
   const stageWidth = config.stageWidth;
   const stageHeight = config.stageHeight;
   const origin = config.origin;
   const gridSpacing = config.styles.gridSpacing;
   
-  // Calculate grid bounds (how many units to show)
-  const unitsPerGrid = 0.5; // Each grid line represents 0.5 units
+  // 计算网格边界（显示多少单位）
+  const unitsPerGrid = 0.5; // 每条网格线表示 0.5 个单位
   const gridLinesX = Math.ceil(stageWidth / gridSpacing);
   const gridLinesY = Math.ceil(stageHeight / gridSpacing);
   
-  // Draw vertical grid lines
+  // 绘制垂直网格线
   for (let i = -gridLinesX; i <= gridLinesX; i++) {
     const x = origin.x + i * gridSpacing;
     if (x < 0 || x > stageWidth) continue;
     
-    const opacity = i % 2 === 0 ? 0.3 : 0.1; // Stronger lines for integer units
+    const opacity = i % 2 === 0 ? 0.3 : 0.1; // 整数单位的线条更强
     
     const line = new Konva.Line({
       points: [x, 0, x, stageHeight],
@@ -130,7 +130,7 @@ function createCoordinateGrid() {
     });
     gridLayer.add(line);
     
-    // Add coordinate labels for integer values (skip 0)
+    // 为整数值添加坐标标签（跳过 0）
     if (i % 2 === 0 && i !== 0) {
       const unitValue = (i / 2).toString();
       const label = new Konva.Text({
@@ -146,12 +146,12 @@ function createCoordinateGrid() {
     }
   }
   
-  // Draw horizontal grid lines
+  // 绘制水平网格线
   for (let i = -gridLinesY; i <= gridLinesY; i++) {
     const y = origin.y + i * gridSpacing;
     if (y < 0 || y > stageHeight) continue;
     
-    const opacity = i % 2 === 0 ? 0.3 : 0.1; // Stronger lines for integer units
+    const opacity = i % 2 === 0 ? 0.3 : 0.1; // 整数单位的线条更强
     
     const line = new Konva.Line({
       points: [0, y, stageWidth, y],
@@ -162,9 +162,9 @@ function createCoordinateGrid() {
     });
     gridLayer.add(line);
     
-    // Add coordinate labels for integer values (skip 0)
+    // 为整数值添加坐标标签（跳过 0）
     if (i % 2 === 0 && i !== 0) {
-      const unitValue = (-i / 2).toString(); // Negative because y is inverted in canvas
+      const unitValue = (-i / 2).toString(); // 负数因为画布中 y 是倒置的
       const label = new Konva.Text({
         x: origin.x + 5,
         y: y - 7,
@@ -179,7 +179,7 @@ function createCoordinateGrid() {
   }
 }
 
-// Set up event listeners
+// 设置事件监听器
 function initEventListeners() {
   const stepsList = document.getElementById('steps-list');
   const autoModeButton = document.getElementById('auto-mode-button');
@@ -190,15 +190,15 @@ function initEventListeners() {
 
     const stepAttr = targetLi.getAttribute('data-step');
 
-    // Any manual interaction should stop auto mode
+    // 任何手动交互都应停止自动模式
     stopAutoMode();
 
     if (stepAttr === 'clear') {
-      clearCanvas(); // clearCanvas also calls stopAutoMode
-      updateStepUI(0); // Deactivate all steps in UI
-      console.log("Clear action triggered");
+      clearCanvas(); // clearCanvas 也会调用 stopAutoMode
+      updateStepUI(0); // 在 UI 中停用所有步骤
+      console.log("触发清除操作");
       
-      // Also hide ratio display
+      // 同时隐藏比值显示
       const ratioDisplay = document.getElementById('ratio-display');
       if (ratioDisplay) {
         ratioDisplay.style.display = 'none';
@@ -206,15 +206,15 @@ function initEventListeners() {
     } else if (stepAttr) {
       const stepNum = parseInt(stepAttr, 10);
       if (!isNaN(stepNum)) {
-        console.log(`Navigating to Step: ${stepNum}`);
-        toggleInteractivity(false); // Ensure interactivity is off for specific steps
+        console.log(`导航到步骤: ${stepNum}`);
+        toggleInteractivity(false); // 确保关闭特定步骤的交互性
         navigateToStep(stepNum);
         updateStepUI(stepNum);
       }
     }
   });
 
-  // Auto Mode Button Listener
+  // 自动模式按钮监听器
   if (autoModeButton) {
     autoModeButton.addEventListener('click', () => {
       if (isAutoModeActive) {
@@ -224,79 +224,79 @@ function initEventListeners() {
       }
     });
   } else {
-    console.error("Auto mode button not found!");
+    console.error("未找到自动模式按钮！");
   }
 
-  // Add keyboard shortcuts
+  // 添加键盘快捷键
   document.addEventListener('keydown', (e) => {
-    // Numbers 1-5 trigger steps
+    // 数字 1-5 触发步骤
     if (e.key >= '1' && e.key <= '5') {
-       e.preventDefault(); // Prevent default browser actions for numbers
-       stopAutoMode(); // Stop auto mode on manual interaction
+       e.preventDefault(); // 防止数字的默认浏览器操作
+       stopAutoMode(); // 手动交互时停止自动模式
        const stepNum = parseInt(e.key);
-       console.log(`Navigating to Step: ${stepNum} (Keyboard)`);
-       toggleInteractivity(false); // Disable interactivity when changing steps
+       console.log(`导航到步骤: ${stepNum} (键盘)`);
+       toggleInteractivity(false); // 更改步骤时禁用交互性
        navigateToStep(stepNum);
        updateStepUI(stepNum);
     }
 
-    // 'C' key to clear
+    // 'C' 键清除
     if (e.key === 'c' || e.key === 'C') {
        e.preventDefault();
-       stopAutoMode(); // Stop auto mode
-       console.log("Clear action triggered (Keyboard)");
+       stopAutoMode(); // 停止自动模式
+       console.log("触发清除操作 (键盘)");
        clearCanvas();
-       updateStepUI(0); // Deactivate all steps in UI
+       updateStepUI(0); // 在 UI 中停用所有步骤
        
-       // Also hide ratio display
+       // 同时隐藏比值显示
        const ratioDisplay = document.getElementById('ratio-display');
        if (ratioDisplay) {
          ratioDisplay.style.display = 'none';
        }
     }
     
-    // 'D' key to toggle drag mode (in step 5)
+    // 'D' 键切换拖动模式（在步骤 5 中）
     if (e.key === 'd' || e.key === 'D') {
        e.preventDefault();
-       if (currentActiveStep >= 5) { // Only in step 5
-         console.log("Toggle drag mode triggered (Keyboard)");
-         toggleInteractivity(); // Toggle current state
+       if (currentActiveStep >= 5) { // 仅在步骤 5 中
+         console.log("触发切换拖动模式 (键盘)");
+         toggleInteractivity(); // 切换当前状态
        }
     }
   });
 
-  // Debounced resize handler
+  // 防抖动的调整大小处理程序
   let resizeTimeout;
   window.addEventListener('resize', () => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
-          console.log("Resizing Stage...");
-          stopAutoMode(); // Stop auto mode on resize
+          console.log("调整舞台大小...");
+          stopAutoMode(); // 调整大小时停止自动模式
 
           const stageContainer = document.getElementById('konva-stage-container');
           const newWidth = stageContainer.clientWidth;
           const newHeight = stageContainer.clientHeight;
 
-          // Update stage dimensions
+          // 更新舞台尺寸
           stage.width(newWidth);
           stage.height(newHeight);
           
-          // Update config
+          // 更新配置
           config.stageWidth = newWidth;
           config.stageHeight = newHeight;
           
-          // Update origin to center of stage
+          // 更新原点为舞台中心
           config.origin = {
             x: newWidth / 2,
             y: newHeight / 2
           };
           
-          // Recalculate scale
+          // 重新计算缩放
           const maxRadius = Math.min(newWidth, newHeight) / 2 * 0.8;
           const largestSemiAxis = Math.max(config.ellipseE.a, config.ellipseE.b);
           config.scale = maxRadius / largestSemiAxis;
 
-          // Update background
+          // 更新背景
           backgroundLayer.destroyChildren();
           const backgroundRect = new Konva.Rect({
             x: 0,
@@ -312,151 +312,151 @@ function initEventListeners() {
           });
           backgroundLayer.add(backgroundRect);
           
-          // Regenerate grid
+          // 重新生成网格
           gridLayer.destroyChildren();
           createCoordinateGrid();
 
-          // Re-render the current step cleanly after resize
+          // 调整大小后重新渲染当前步骤
           const stepToRestore = currentActiveStep;
-          clearCanvas(); // Clear old elements
-          navigateToStep(stepToRestore); // Redraw to the current step with new dimensions
+          clearCanvas(); // 清除旧元素
+          navigateToStep(stepToRestore); // 使用新尺寸重新绘制当前步骤
 
-          // Redraw layers
+          // 重绘图层
           backgroundLayer.batchDraw();
           gridLayer.batchDraw();
           layer.batchDraw();
-      }, 250); // Debounce resize event
+      }, 250); // 防抖动调整大小事件
   });
 }
 
-// --- Auto Mode Functions ---
+// --- 自动模式功能 ---
 
 function startAutoMode() {
-  if (isAutoModeActive) return; // Already running
+  if (isAutoModeActive) return; // 已在运行
 
-  console.log("Starting Auto Mode...");
+  console.log("启动自动模式...");
   
-  // Update UI first
+  // 首先更新 UI
   const autoModeButton = document.getElementById('auto-mode-button');
   if (autoModeButton) {
-    autoModeButton.textContent = "Stop Auto Demo";
+    autoModeButton.textContent = "停止自动演示";
     autoModeButton.classList.add('stop');
   }
   
-  // Also hide ratio display
+  // 同时隐藏比值显示
   const ratioDisplay = document.getElementById('ratio-display');
   if (ratioDisplay) {
     ratioDisplay.style.display = 'none';
   }
 
-  // IMPORTANT: Clear canvas without stopping auto mode
+  // 重要：清除画布而不停止自动模式
   clearCanvasForAutoMode();
   
-  // AFTER clearing, enable auto mode
+  // 清除后，启用自动模式
   isAutoModeActive = true;
   isDraggable = false;
   
-  // Start from step 1
+  // 从步骤 1 开始
   currentAutoStep = 1;
   
-  // Begin execution sequence immediately
-  console.log("Auto Mode: Starting execution from step 1");
+  // 立即开始执行序列
+  console.log("自动模式：从步骤 1 开始执行");
   executeAutoStep();
 }
 
-// New function: Clear canvas without stopping auto mode
+// 新功能：清除画布而不停止自动模式
 function clearCanvasForAutoMode() {
-  console.log("Clearing canvas for auto mode");
+  console.log("为自动模式清除画布");
   
-  // Stop any running animations
+  // 停止任何运行中的动画
   gsap.killTweensOf(layer.getChildren());
   
-  // Remove all shapes from layers
+  // 从图层中移除所有形状
   layer.destroyChildren();
   
-  // Clear references and reset counters
+  // 清除引用并重置计数器
   elements = {};
   currentActiveStep = 0;
   
-  // Redraw
+  // 重绘
   layer.batchDraw();
 }
 
 function stopAutoMode() {
-  if (!isAutoModeActive) return; // Not running
+  if (!isAutoModeActive) return; // 未运行
 
-  console.log("Stopping Auto Mode.");
+  console.log("停止自动模式。");
   isAutoModeActive = false;
   
-  // Clear any pending timeouts
+  // 清除任何待处理的超时
   if (autoModeTimeoutId) {
     clearTimeout(autoModeTimeoutId);
     autoModeTimeoutId = null;
   }
-  currentAutoStep = 0; // Reset step counter
+  currentAutoStep = 0; // 重置步骤计数器
 
-  // Update button state
+  // 更新按钮状态
   const autoModeButton = document.getElementById('auto-mode-button');
   if (autoModeButton) {
-    autoModeButton.textContent = "Start Auto Demo";
+    autoModeButton.textContent = "开始自动演示";
     autoModeButton.classList.remove('stop');
   }
 }
 
 function executeAutoStep() {
-  // Double-check active state
+  // 再次检查活动状态
   if (!isAutoModeActive) {
-    console.warn("Auto mode was deactivated during execution");
+    console.warn("执行过程中自动模式被停用");
     return;
   }
 
   const totalSteps = 5;
   if (currentAutoStep > totalSteps) {
-    console.log("Auto Mode finished.");
+    console.log("自动模式完成。");
     stopAutoMode();
     return;
   }
 
-  console.log(`Auto Mode: Executing Step ${currentAutoStep}`);
+  console.log(`自动模式：执行步骤 ${currentAutoStep}`);
   
-  // Draw the current step
+  // 绘制当前步骤
   navigateToStep(currentAutoStep);
   updateStepUI(currentAutoStep);
   
-  // Clear any existing timeouts
+  // 清除任何现有超时
   if (autoModeTimeoutId) {
     clearTimeout(autoModeTimeoutId);
   }
   
-  // Schedule the next step with a safety check
+  // 安排下一步并进行安全检查
   autoModeTimeoutId = setTimeout(() => {
-    if (isAutoModeActive) { // Check again in case mode was stopped during timeout
-      console.log(`Auto Mode: Advancing to Step ${currentAutoStep + 1}`);
+    if (isAutoModeActive) { // 在超时期间再次检查模式是否被停止
+      console.log(`自动模式：前进到步骤 ${currentAutoStep + 1}`);
       currentAutoStep++;
       executeAutoStep();
     }
-  }, config.autoModeStepDelay || 2500); // Provide fallback delay value
+  }, config.autoModeStepDelay || 2500); // 提供备用延迟值
 }
 
-// Function to navigate visualization to a specific step
+// 导航到特定步骤的可视化函数
 function navigateToStep(targetStep) {
-  // Don't navigate if target is invalid or already there
+  // 如果目标无效或已在该步骤，则不导航
   if (targetStep === currentActiveStep && targetStep !== 0) {
-     console.log(`Already at Step ${targetStep}`);
+     console.log(`已在步骤 ${targetStep}`);
      return;
   }
 
-  // Stop any ongoing animations
+  // 停止任何正在进行的动画
   gsap.killTweensOf(layer.getChildren());
 
-  // Handle backward navigation: Clear steps from current down to target + 1
+  // 处理向后导航：从当前步骤向下清除到目标 + 1
   if (targetStep < currentActiveStep) {
-    console.log(`Moving backward from ${currentActiveStep} to ${targetStep}`);
+    console.log(`从 ${currentActiveStep} 向后移动到 ${targetStep}`);
     for (let i = currentActiveStep; i > targetStep; i--) {
       clearElementsForStep(i);
     }
     
-    // Hide ratio display when moving backward before step 4
+    // 在步骤 4 之前向后移动时隐藏比值显示
     if (targetStep < 4) {
       const ratioDisplay = document.getElementById('ratio-display');
       if (ratioDisplay) {
@@ -464,98 +464,98 @@ function navigateToStep(targetStep) {
       }
     }
   }
-  // Handle forward navigation: Draw steps from current + 1 up to target
+  // 处理向前导航：从当前 + 1 向上绘制到目标
   else if (targetStep > currentActiveStep) {
-    console.log(`Moving forward from ${currentActiveStep} to ${targetStep}`);
-    // Always animate when in auto mode
+    console.log(`从 ${currentActiveStep} 向前移动到 ${targetStep}`);
+    // 在自动模式下始终使用动画
     const animateFinalStep = isAutoModeActive || true;
 
     for (let i = currentActiveStep + 1; i <= targetStep; i++) {
       const animate = (i === targetStep) && animateFinalStep;
-      console.log(`Drawing Step ${i} (Animate: ${animate})`);
+      console.log(`绘制步骤 ${i} (动画: ${animate})`);
       
-      // Dynamically call the correct drawStep function
+      // 动态调用正确的 drawStep 函数
       const drawFunctionName = `drawStep${i}`;
       if (typeof window[drawFunctionName] === 'function') {
          window[drawFunctionName](animate);
       } else {
-         console.error(`Error: Function ${drawFunctionName} not found.`);
+         console.error(`错误：未找到函数 ${drawFunctionName}。`);
       }
     }
   } else if (targetStep === 0 && currentActiveStep > 0) {
-      // Handle clearing (targetStep 0 from a non-zero state)
-      console.log(`Clearing from Step ${currentActiveStep}`);
+      // 处理清除（目标步骤 0 从非零状态）
+      console.log(`从步骤 ${currentActiveStep} 清除`);
       for (let i = currentActiveStep; i > 0; i--) {
           clearElementsForStep(i);
       }
       
-      // Hide ratio display
+      // 隐藏比值显示
       const ratioDisplay = document.getElementById('ratio-display');
       if (ratioDisplay) {
         ratioDisplay.style.display = 'none';
       }
   }
 
-  // Update the current step tracker
+  // 更新当前步骤跟踪器
   currentActiveStep = targetStep;
 
-  // Ensure final state is drawn
+  // 确保绘制最终状态
   layer.batchDraw();
 }
 
-// Clear elements associated with a specific step number
+// 清除与特定步骤号关联的元素
 function clearElementsForStep(stepNum) {
   if (!stepElementKeys[stepNum]) {
-    console.warn(`No element keys defined for step ${stepNum}`);
+    console.warn(`未为步骤 ${stepNum} 定义元素键`);
     return;
   }
 
-  console.log(`Clearing elements for Step ${stepNum}`);
+  console.log(`清除步骤 ${stepNum} 的元素`);
   const keysToClear = stepElementKeys[stepNum];
   let clearedCount = 0;
 
   keysToClear.forEach(key => {
     if (elements[key]) {
-      // Handle cases where element might be an array
+      // 处理元素可能是数组的情况
       if (Array.isArray(elements[key])) {
          elements[key].forEach(el => { 
            if(el && typeof el.destroy === 'function') {
-             console.log(`Destroying array element ${key}`);
+             console.log(`销毁数组元素 ${key}`);
              el.destroy(); 
            }
          });
       } else if (elements[key] instanceof Konva.Node) {
-         console.log(`Destroying Konva node ${key}`);
-         elements[key].destroy(); // Destroy Konva node
+         console.log(`销毁 Konva 节点 ${key}`);
+         elements[key].destroy(); // 销毁 Konva 节点
       } else {
-         console.warn(`Element ${key} is neither array nor Konva node. Type: ${typeof elements[key]}`);
+         console.warn(`元素 ${key} 既不是数组也不是 Konva 节点。类型: ${typeof elements[key]}`);
       }
-      delete elements[key]; // Remove reference from our tracker
+      delete elements[key]; // 从我们的跟踪器中移除引用
       clearedCount++;
     } else {
-      console.warn(`Element ${key} not found in elements map when clearing step ${stepNum}`);
+      console.warn(`在清除步骤 ${stepNum} 时未在元素映射中找到元素 ${key}`);
     }
   });
 
-  // Also clear the step explanation text if it exists for this step
+  // 如果存在此步骤的步骤解释文本，也清除它
   if (elements.stepExplanation) {
       elements.stepExplanation.destroy();
       delete elements.stepExplanation;
   }
 
-  console.log(`Cleared ${clearedCount} element groups/elements for step ${stepNum}.`);
-  // Redraw needed after clearing
+  console.log(`为步骤 ${stepNum} 清除了 ${clearedCount} 个元素组/元素。`);
+  // 清除后需要重绘
   layer.batchDraw();
 }
 
-// Update the active state in the step list UI
+// 更新步骤列表 UI 中的活动状态
 function updateStepUI(activeStep) {
   const stepsList = document.getElementById('steps-list');
   const stepItems = stepsList.querySelectorAll('li[data-step]');
 
   stepItems.forEach(item => {
     const stepAttr = item.getAttribute('data-step');
-    // Use == for string/number comparison flexibility
+    // 使用 == 进行字符串/数字比较灵活性
     if (stepAttr == activeStep) {
       item.classList.add('active');
     } else {
@@ -564,20 +564,20 @@ function updateStepUI(activeStep) {
   });
 }
 
-// Clear canvas function - Resets everything
+// 清除画布函数 - 重置所有内容
 function clearCanvas() {
-  console.log("Clearing canvas completely.");
-  stopAutoMode(); // Ensure auto mode is stopped when clearing
+  console.log("完全清除画布。");
+  stopAutoMode(); // 清除时确保自动模式已停止
 
-  gsap.killTweensOf(layer.getChildren()); // Stop any running animations
-  layer.destroyChildren(); // Remove all shapes from main layer
-  elements = {}; // Clear references
-  currentActiveStep = 0; // Reset step counter
+  gsap.killTweensOf(layer.getChildren()); // 停止任何运行中的动画
+  layer.destroyChildren(); // 从主图层移除所有形状
+  elements = {}; // 清除引用
+  currentActiveStep = 0; // 重置步骤计数器
   
-  // Reset interactivity state
+  // 重置交互性状态
   isDraggable = false;
 
-  // Hide ratio display
+  // 隐藏比值显示
   const ratioDisplay = document.getElementById('ratio-display');
   if (ratioDisplay) {
     ratioDisplay.style.display = 'none';

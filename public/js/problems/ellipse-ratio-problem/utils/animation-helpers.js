@@ -1,8 +1,8 @@
 /**
- * Animation helper functions for the Ellipse Ratio Problem visualization
+ * 椭圆比值问题可视化的动画辅助函数
  */
 
-// Create a point with label in one function
+// 在一个函数中创建带标签的点
 function createPointWithLabel(point, label, color, labelOffsetX = 10, labelOffsetY = -20) {
   const pointObj = new Konva.Circle({
     x: point.x,
@@ -30,7 +30,7 @@ function createPointWithLabel(point, label, color, labelOffsetX = 10, labelOffse
   return { point: pointObj, text: textObj };
 }
 
-// Animate drawing an ellipse
+// 动画绘制椭圆
 function animateEllipseDrawing(ellipse, duration = config.animDuration, delay = 0) {
   return new Promise((resolve) => {
     ellipse.visible(true);
@@ -48,7 +48,7 @@ function animateEllipseDrawing(ellipse, duration = config.animDuration, delay = 
   });
 }
 
-// Animate a point appearing with label
+// 动画显示带标签的点
 function animatePointAppearing(pointObj, textObj, duration = config.animDuration * 0.3, delay = 0) {
   return new Promise((resolve) => {
     gsap.to(pointObj, {
@@ -76,7 +76,7 @@ function animatePointAppearing(pointObj, textObj, duration = config.animDuration
   });
 }
 
-// Animate drawing a line from start to end
+// 动画从起点到终点绘制线段
 function animateDrawLine(line, duration = config.animDuration, delay = 0) {
   return new Promise((resolve) => {
     const points = line.points();
@@ -85,11 +85,11 @@ function animateDrawLine(line, duration = config.animDuration, delay = 0) {
     const endX = points[2];
     const endY = points[3];
     
-    // Reset to start position
+    // 重置到起始位置
     line.points([startX, startY, startX, startY]);
     line.visible(true);
     
-    // Animate drawing
+    // 动画绘制
     gsap.to({}, {
       duration: duration,
       delay: delay,
@@ -102,7 +102,7 @@ function animateDrawLine(line, duration = config.animDuration, delay = 0) {
       },
       ease: config.easing.draw,
       onComplete: () => {
-        // Ensure final position is precise
+        // 确保最终位置精确
         line.points([startX, startY, endX, endY]);
         layer.batchDraw();
         resolve(line);
@@ -111,7 +111,7 @@ function animateDrawLine(line, duration = config.animDuration, delay = 0) {
   });
 }
 
-// Show a step explanation text with animation
+// 用动画显示步骤解释文本
 function showStepExplanation(text, duration = 0.3) {
   if (elements.stepExplanation) {
     gsap.to(elements.stepExplanation, {
@@ -145,15 +145,15 @@ function showStepExplanation(text, duration = 0.3) {
   }
 }
 
-// Animate the calculation of the ratio with visual indicators
+// 用视觉指示器动画显示比值计算
 function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animDuration) {
   return new Promise((resolve) => {
-    // Create temporary indicators for lengths
+    // 创建长度的临时指示器
     const distOP = distance(pointO, pointP);
     const distOQ = distance(pointO, pointQ);
     const ratio = distOQ / distOP;
     
-    // Create a line for OP with animation to show measurement
+    // 创建 OP 线段并动画显示测量
     const lineOP = new Konva.Line({
       points: [pointO.x, pointO.y, pointP.x, pointP.y],
       stroke: config.colors.rayOP,
@@ -163,7 +163,7 @@ function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animD
     });
     layer.add(lineOP);
     
-    // Create a line for OQ with animation to show measurement
+    // 创建 OQ 线段并动画显示测量
     const lineOQ = new Konva.Line({
       points: [pointO.x, pointO.y, pointQ.x, pointQ.y],
       stroke: config.colors.rayOQ,
@@ -173,7 +173,7 @@ function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animD
     });
     layer.add(lineOQ);
     
-    // Create text labels for the distances
+    // 创建距离的文本标签
     const opText = new Konva.Text({
       x: (pointO.x + pointP.x) / 2 + 15,
       y: (pointO.y + pointP.y) / 2 - 10,
@@ -196,7 +196,7 @@ function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animD
       opacity: 0
     });
     
-    // Create additional text to highlight the relationship
+    // 创建额外文本以强调关系
     const relationText = new Konva.Text({
       x: (pointO.x + pointQ.x) / 2 + 50,
       y: (pointO.y + pointQ.y) / 2 + 20,
@@ -222,11 +222,11 @@ function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animD
       cornerRadius: 5,
       opacity: 0
     });
-    ratioText.offsetX(ratioText.width() / 2); // Center horizontally
+    ratioText.offsetX(ratioText.width() / 2); // 水平居中
     
     layer.add(opText, oqText, relationText, ratioText);
     
-    // Animate the measurement lines and texts sequentially
+    // 按顺序动画显示测量线和文本
     gsap.timeline()
       .to(lineOP, { opacity: 1, duration: duration * 0.3 })
       .to(opText, { opacity: 1, duration: duration * 0.3 })
@@ -237,7 +237,7 @@ function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animD
         opacity: 1, 
         duration: duration * 0.5,
         onComplete: () => {
-          // Pulse the ratio text to emphasize
+          // 脉动比值文本以强调
           gsap.to(ratioText, {
             scaleX: 1.1,
             scaleY: 1.1,
@@ -245,7 +245,7 @@ function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animD
             repeat: 1,
             yoyo: true,
             onComplete: () => {
-              // Update the HTML ratio display
+              // 更新 HTML 比值显示
               const ratioDisplay = document.getElementById('ratio-display');
               const ratioValue = document.getElementById('ratio-value');
               
@@ -254,13 +254,13 @@ function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animD
                 ratioDisplay.style.display = 'block';
                 ratioDisplay.classList.add('highlight');
                 
-                // Remove highlight after a moment
+                // 片刻后移除高亮
                 setTimeout(() => {
                   ratioDisplay.classList.remove('highlight');
                 }, 1000);
               }
               
-              // Clean up temporary visual elements after a delay
+              // 延迟后清理临时视觉元素
               setTimeout(() => {
                 gsap.to([lineOP, lineOQ, opText, oqText, relationText, ratioText], {
                   opacity: 0,
@@ -276,7 +276,7 @@ function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animD
                     resolve(ratio);
                   }
                 });
-              }, 3000); // Show for 3 seconds
+              }, 3000); // 显示 3 秒
             }
           });
         }
@@ -284,7 +284,7 @@ function animateRatioCalculation(pointO, pointP, pointQ, duration = config.animD
   });
 }
 
-// Show a mathematical formula or annotation
+// 显示数学公式或注释
 function showMathAnnotation(text, position, duration = 0.5, delay = 0) {
   return new Promise((resolve) => {
     const annotation = new Konva.Text({
@@ -304,14 +304,14 @@ function showMathAnnotation(text, position, duration = 0.5, delay = 0) {
       opacity: 0
     });
     
-    // Center the text
+    // 文本居中
     annotation.offsetX(annotation.width() / 2);
     
     layer.add(annotation);
     
     gsap.to(annotation, {
       opacity: 1,
-      y: position.y - 10, // Slight floating animation
+      y: position.y - 10, // 轻微上浮动画
       duration: duration,
       delay: delay,
       ease: "power2.out",
@@ -322,14 +322,14 @@ function showMathAnnotation(text, position, duration = 0.5, delay = 0) {
   });
 }
 
-// Demonstrate the constant ratio with multiple points
+// 用多个点演示恒定比值
 function demonstrateConstantRatio(duration = config.animDuration) {
   return new Promise((resolve) => {
-    // Create a visual indicator for the constant ratio
+    // 为恒定比值创建视觉指示器
     const annotation = new Konva.Text({
       x: stage.width() / 2,
       y: 50,
-      text: "For any point P on ellipse C,\n|OQ|/|OP| = 2",
+      text: "对于椭圆 C 上的任意点 P，\n|OQ|/|OP| = 2",
       fontSize: 20,
       fontStyle: 'bold',
       fill: config.colors.ratioHighlight,
@@ -345,11 +345,11 @@ function demonstrateConstantRatio(duration = config.animDuration) {
     });
     annotation.offsetX(annotation.width() / 2);
     
-    // Create a mathematical explanation of why this happens
+    // 创建解释为什么会出现这种情况的数学解释
     const mathExplanation = new Konva.Text({
       x: stage.width() / 2,
       y: 110,
-      text: "This happens because:\n1. P has coordinates (2cos(θ), sin(θ)) on ellipse C\n2. Ray OP can be written as t·(2cos(θ), sin(θ)) for t > 0\n3. Substituting into ellipse E gives us t = 2\n4. Thus Q = 2P = (4cos(θ), 2sin(θ))",
+      text: "这是因为：\n1. P 在椭圆 C 上的坐标为 (2cos(θ), sin(θ))\n2. 射线 OP 可以写为 t·(2cos(θ), sin(θ))，其中 t > 0\n3. 将其代入椭圆 E 的方程得到 t = 2\n4. 因此 Q = 2P = (4cos(θ), 2sin(θ))",
       fontSize: 16,
       fill: '#333',
       align: 'center',
@@ -362,13 +362,13 @@ function demonstrateConstantRatio(duration = config.animDuration) {
     
     layer.add(annotation, mathExplanation);
     
-    // Show the annotation with animation
+    // 用动画显示注释
     gsap.to(annotation, {
       opacity: 1,
       duration: duration * 0.5,
       ease: "power2.out",
       onComplete: () => {
-        // Show the math explanation
+        // 显示数学解释
         gsap.to(mathExplanation, {
           opacity: 1,
           duration: duration * 0.5,
@@ -377,11 +377,11 @@ function demonstrateConstantRatio(duration = config.animDuration) {
       }
     });
     
-    // Create an array of angles to demonstrate different points P
+    // 创建角度数组以演示不同的点 P
     const angles = [0, Math.PI/6, Math.PI/3, Math.PI/2, 2*Math.PI/3, 5*Math.PI/6, Math.PI];
     let currentAngle = 0;
     
-    // Create a circular indicator that will travel along ellipse C
+    // 创建沿椭圆 C 移动的圆形指示器
     const indicator = new Konva.Circle({
       x: 0,
       y: 0,
@@ -393,23 +393,23 @@ function demonstrateConstantRatio(duration = config.animDuration) {
     });
     layer.add(indicator);
     
-    // Function to update point P and the corresponding Q
+    // 更新点 P 和相应点 Q 的函数
     function updatePoints(angle) {
-      // Calculate point P on ellipse C
+      // 计算椭圆 C 上的点 P
       const px = config.origin.x + config.scale * config.ellipseC.a * Math.cos(angle);
       const py = config.origin.y - config.scale * config.ellipseC.b * Math.sin(angle);
       
-      // Move the indicator to show where P would be
+      // 移动指示器以显示 P 的位置
       indicator.x(px);
       indicator.y(py);
       
-      // Calculate point Q (exactly twice the distance from O to P)
+      // 计算点 Q（从 O 到 P 的距离的两倍）
       const ox = config.origin.x;
       const oy = config.origin.y;
       const qx = ox + 2 * (px - ox);
       const qy = oy + 2 * (py - oy);
       
-      // Create temporary ray indicator
+      // 创建临时射线指示器
       const ray = new Konva.Line({
         points: [ox, oy, qx, qy],
         stroke: config.colors.rayOP,
@@ -419,7 +419,7 @@ function demonstrateConstantRatio(duration = config.animDuration) {
       });
       layer.add(ray);
       
-      // Create temporary point Q indicator
+      // 创建临时点 Q 指示器
       const qIndicator = new Konva.Circle({
         x: qx,
         y: qy,
@@ -429,7 +429,7 @@ function demonstrateConstantRatio(duration = config.animDuration) {
       });
       layer.add(qIndicator);
       
-      // Create text showing the coordinates
+      // 创建显示坐标的文本
       const coordsText = new Konva.Text({
         x: qx + 15,
         y: qy - 40,
@@ -442,12 +442,12 @@ function demonstrateConstantRatio(duration = config.animDuration) {
       });
       layer.add(coordsText);
       
-      // Fade in the temporary elements
+      // 淡入临时元素
       gsap.to([ray, qIndicator, coordsText], {
         opacity: 0.8,
         duration: 0.3,
         onComplete: () => {
-          // Fade out after a brief delay
+          // 简短延迟后淡出
           gsap.to([ray, qIndicator, coordsText], {
             opacity: 0,
             duration: 0.3,
@@ -463,10 +463,10 @@ function demonstrateConstantRatio(duration = config.animDuration) {
       });
     }
     
-    // Animate the indicator through different points
+    // 通过不同点动画指示器
     const animateNextPoint = () => {
       if (currentAngle >= angles.length) {
-        // Animation series complete
+        // 动画系列完成
         gsap.to(indicator, {
           opacity: 0,
           duration: 0.5,
@@ -474,7 +474,7 @@ function demonstrateConstantRatio(duration = config.animDuration) {
             indicator.destroy();
             layer.batchDraw();
             
-            // Highlight the result text once more
+            // 再次高亮结果文本
             const ratioDisplay = document.getElementById('ratio-display');
             if (ratioDisplay) {
               ratioDisplay.classList.add('highlight');
@@ -483,7 +483,7 @@ function demonstrateConstantRatio(duration = config.animDuration) {
               }, 1000);
             }
             
-            // Cleanup and resolve after a delay
+            // 延迟后清理并解决
             setTimeout(() => {
               gsap.to([annotation, mathExplanation], {
                 opacity: 0,
@@ -500,16 +500,16 @@ function demonstrateConstantRatio(duration = config.animDuration) {
         return;
       }
       
-      // Update to the next angle
+      // 更新到下一个角度
       const angle = angles[currentAngle];
       updatePoints(angle);
       currentAngle++;
       
-      // Schedule the next update
+      // 安排下一次更新
       setTimeout(animateNextPoint, 1200);
     };
     
-    // Start the animation sequence after the annotation appears
+    // 注释出现后开始动画序列
     setTimeout(animateNextPoint, duration * 500);
   });
 }

@@ -1,0 +1,200 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+#header {
+    background-color: #3a4a6d;
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+#header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+#header p {
+    margin: 5px 0 0;
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+#controls {
+    padding: 15px;
+    background-color: #e0e0e0;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.control-group label {
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+select, button {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+button {
+    background-color: #4a5f8c;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #3a4a6d;
+}
+
+button:disabled {
+    background-color: #7f8fa6;
+    cursor: not-allowed;
+}
+
+#info-panel {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #ddd;
+}
+
+.info-box {
+    flex: 1;
+    padding: 10px;
+    margin: 0 5px;
+    background-color: white;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    min-height: 50px;
+}
+
+#element-info {
+    font-weight: bold;
+}
+
+#charge-info {
+    text-align: right;
+}
+
+#visualization-container {
+    height: 50vh;
+    min-height: 400px;
+    position: relative;
+    background-color: #000;
+    overflow: hidden;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+#legend {
+    padding: 15px;
+    background-color: #f8f8f8;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+}
+
+#legend h3 {
+    margin-top: 0;
+    color: #3a4a6d;
+    font-size: 16px;
+}
+
+#legend ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#legend li {
+    margin: 5px 20px 5px 0;
+    flex: 1 1 45%;
+}
+
+.legend-item {
+    font-weight: bold;
+}
+
+#educational-content {
+    padding: 20px;
+    background-color: white;
+}
+
+#educational-content h2 {
+    color: #3a4a6d;
+    margin-top: 0;
+}
+
+#educational-content ul {
+    padding-left: 20px;
+}
+
+/* Specific styles for charge indicators */
+.positive-charge {
+    color: #e74c3c;
+}
+
+.negative-charge {
+    color: #3498db;
+}
+
+.neutral-charge {
+    color: #2c3e50;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .control-group {
+        margin-right: 0;
+        margin-bottom: 10px;
+        justify-content: space-between;
+    }
+    
+    #info-panel {
+        flex-direction: column;
+    }
+    
+    .info-box {
+        margin: 5px 0;
+    }
+    
+    #legend ul {
+        flex-direction: column;
+    }
+    
+    #legend li {
+        flex: 1 1 100%;
+    }
+}

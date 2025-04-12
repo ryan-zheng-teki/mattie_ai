@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ellipse Ratio Problem | Math Visualizations</title>
+  <title>椭圆比值问题 | 数学可视化</title>
   <link rel="stylesheet" href="/css/styles.css">
   <!-- Include Konva and GSAP -->
   <script src="https://unpkg.com/konva@8.3.2/konva.min.js"></script>
@@ -61,32 +61,84 @@
       background-color: #d32f2f;
     }
     
-    /* Compact problem description section */
+    /* Ultra compact problem description section */
     .problem-description {
       background-color: #f7f9fc;
       border-radius: 8px;
-      padding: 12px 15px;
-      margin: 10px 0;
+      padding: 8px 10px;
+      margin: 5px 0;
       border-left: 4px solid #4285f4;
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      max-height: 60px;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    
+    .problem-description.expanded {
+      max-height: 200px;
     }
     
     .problem-description h3 {
-      margin-top: 0;
+      margin: 0;
       color: #333;
-      font-size: 1.2em;
-      border-bottom: 1px solid #e0e0e0;
-      padding-bottom: 6px;
-      margin-bottom: 8px;
+      font-size: 1em;
+      padding-right: 10px;
+      margin-right: 10px;
+      border-right: 1px solid #e0e0e0;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+    
+    .problem-content {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px 15px;
     }
     
     .problem-description p {
-      line-height: 1.4;
-      margin-bottom: 8px;
+      margin: 0;
+      line-height: 1.2;
+      font-size: 0.9em;
+    }
+    
+    .problem-equations {
+      display: flex;
+      gap: 15px;
+      align-items: center;
     }
     
     .problem-description .math {
       font-style: italic;
+      white-space: nowrap;
+    }
+    
+    .problem-statement {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .problem-question {
+      font-weight: bold;
+      color: #4285f4;
+    }
+    
+    .toggle-description {
+      background: none;
+      border: none;
+      color: #4285f4;
+      cursor: pointer;
+      padding: 0 5px;
+      font-size: 1.2em;
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     /* Compact back link */
@@ -115,20 +167,6 @@
     .back-link svg {
       margin-right: 5px;
       fill: currentColor;
-    }
-    
-    .prove-items {
-      margin-top: 8px;
-    }
-    
-    .prove-items ol {
-      margin-top: 3px;
-      padding-left: 25px;
-      margin-bottom: 0;
-    }
-    
-    .prove-items li {
-      margin-bottom: 4px;
     }
     
     /* Optimization for visualization container */
@@ -236,22 +274,24 @@
       background-color: #1976d2;
     }
     
-    /* Math explanation panel */
+    /* Redesigned side panel for math explanation */
     .math-explanation-panel {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80%;
-      max-width: 800px;
-      max-height: 80vh;
+      top: 0;
+      right: 0;
+      width: 40%;
+      height: 100vh;
       background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      padding: 15px;
+      box-shadow: -2px 0 10px rgba(0,0,0,0.2);
       z-index: 1000;
       overflow-y: auto;
-      display: none;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+    
+    .math-explanation-panel.visible {
+      transform: translateX(0);
     }
     
     .panel-header {
@@ -261,11 +301,30 @@
       border-bottom: 1px solid #eee;
       padding-bottom: 10px;
       margin-bottom: 15px;
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 2;
     }
     
     .panel-header h3 {
       margin: 0;
       color: #333;
+      font-size: 18px;
+    }
+    
+    .panel-controls {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .resize-button {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
+      padding: 0 5px;
     }
     
     .close-button {
@@ -274,19 +333,20 @@
       font-size: 24px;
       cursor: pointer;
       color: #666;
+      padding: 0;
     }
     
-    .close-button:hover {
+    .close-button:hover, .resize-button:hover {
       color: #333;
     }
     
     .math-content {
-      padding: 10px 0;
+      padding: 5px 0;
     }
     
     .math-step {
-      margin-bottom: 20px;
-      padding-bottom: 15px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
       border-bottom: 1px solid #f0f0f0;
     }
     
@@ -296,27 +356,42 @@
     
     .math-step h4 {
       color: #2196f3;
-      margin-bottom: 10px;
+      margin: 0 0 8px 0;
+      font-size: 16px;
     }
     
     .step-content {
-      line-height: 1.5;
+      line-height: 1.4;
     }
     
     .math {
       font-family: 'Times New Roman', serif;
       background-color: #f9f9f9;
-      padding: 5px 10px;
+      padding: 3px 8px;
       border-radius: 4px;
-      margin: 5px 0;
+      margin: 3px 0;
       display: block;
+      font-size: 0.95em;
+    }
+
+    /* Panel width sizes */
+    .math-explanation-panel.narrow {
+      width: 30%;
+    }
+    
+    .math-explanation-panel.normal {
+      width: 40%;
+    }
+    
+    .math-explanation-panel.wide {
+      width: 50%;
     }
   </style>
 </head>
 <body>
   <header>
     <div class="container">
-      <h1>Interactive Math Visualizations</h1>
+      <h1>交互式数学可视化</h1>
     </div>
   </header>
 
@@ -327,59 +402,61 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
           <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
         </svg>
-        Back to All Visualizations
+        返回所有可视化
       </a>
     </div>
 
-    <!-- Problem Description Section -->
+    <!-- Redesigned Compact Problem Description Section -->
     <section class="problem-description">
-      <h3>Problem Statement</h3>
-      
-      <p>In a rectangular coordinate system xOy, there are two ellipses:</p>
-      <p class="math">Ellipse C: x²/4 + y² = 1</p>
-      <p class="math">Ellipse E: x²/16 + y²/4 = 1</p>
-      
-      <p>Point P is an arbitrary point on ellipse C. The ray OP (from origin O) intersects ellipse E at point Q.</p>
-      
-      <div class="prove-items">
-        <p>Find the value of the ratio |OQ|/|OP|.</p>
+      <h3>问题描述</h3>
+      <div class="problem-content">
+        <p>在直角坐标系 xOy 中，有两个椭圆：</p>
+        <div class="problem-equations">
+          <p class="math">椭圆 C: x²/4 + y² = 1</p>
+          <p class="math">椭圆 E: x²/16 + y²/4 = 1</p>
+        </div>
+        <div class="problem-statement">
+          <p>点 P 是椭圆 C 上的任意点。从原点 O 出发的射线 OP 与椭圆 E 相交于点 Q。</p>
+          <p class="problem-question">求比值 |OQ|/|OP| 的值。</p>
+        </div>
       </div>
+      <button class="toggle-description" title="展开/折叠问题描述">⋯</button>
     </section>
 
     <div class="visualization-container">
       <!-- Left Panel: Steps -->
       <div id="steps-container">
-        <h2>Solution Steps</h2>
+        <h2>解题步骤</h2>
         <!-- Auto mode button -->
-        <button id="auto-mode-button" class="auto-button">Start Auto Demo</button>
+        <button id="auto-mode-button" class="auto-button">开始自动演示</button>
         
         <!-- Mathematical explanation button -->
-        <button id="show-math-button" class="math-button">Show Mathematical Proof</button>
+        <button id="show-math-button" class="math-button">显示数学证明</button>
         
         <ul id="steps-list">
           <li data-step="1" class="active">
-            <strong>1. Draw the coordinate system and ellipses</strong>
-            <p>Draw the coordinate axes and both ellipses C and E.</p>
+            <strong>1. 绘制坐标系和椭圆</strong>
+            <p>绘制坐标轴和两个椭圆 C 和 E。</p>
           </li>
           <li data-step="2">
-            <strong>2. Select point P on ellipse C</strong>
-            <p>Choose any point P on ellipse C and mark it.</p>
+            <strong>2. 选择椭圆 C 上的点 P</strong>
+            <p>在椭圆 C 上选择任意点 P 并标记。</p>
           </li>
           <li data-step="3">
-            <strong>3. Draw ray OP and find intersection Q</strong>
-            <p>Draw ray OP and find where it intersects ellipse E at point Q.</p>
+            <strong>3. 绘制射线 OP 并找出交点 Q</strong>
+            <p>绘制射线 OP 并找出其与椭圆 E 的交点 Q。</p>
           </li>
           <li data-step="4">
-            <strong>4. Calculate ratio |OQ|/|OP|</strong>
-            <p>Calculate and display the ratio of distances |OQ|/|OP|.</p>
+            <strong>4. 计算比值 |OQ|/|OP|</strong>
+            <p>计算并显示距离比值 |OQ|/|OP|。</p>
           </li>
           <li data-step="5">
-            <strong>5. Demonstrate constant ratio</strong>
-            <p>Show that this ratio remains constant (= 2) regardless of P's position.</p>
+            <strong>5. 证明比值恒定</strong>
+            <p>证明无论点 P 在椭圆 C 上的位置如何，此比值始终为 2。</p>
           </li>
           <li data-step="clear">
-            <strong>Clear & Reset</strong>
-            <p>Clear the canvas and restart exploration.</p>
+            <strong>清除并重置</strong>
+            <p>清除画布并重新开始探索。</p>
           </li>
         </ul>
       </div>
@@ -388,20 +465,23 @@
       <div id="canvas-container">
         <div id="konva-stage-container" class="konva-container"></div>
         <div id="ratio-display" class="result-display" style="display: none;">
-          Ratio |OQ|/|OP| = <span id="ratio-value">0</span>
+          比值 |OQ|/|OP| = <span id="ratio-value">0</span>
         </div>
       </div>
     </div>
 
     <div id="controls-container">
-      Shortcuts: <kbd>1</kbd>-<kbd>5</kbd> Steps | <kbd>C</kbd> Clear | <kbd>D</kbd> Drag Mode
+      快捷键: <kbd>1</kbd>-<kbd>5</kbd> 步骤 | <kbd>C</kbd> 清除 | <kbd>D</kbd> 拖动模式
     </div>
     
-    <!-- Mathematical Explanation Panel -->
-    <div id="math-explanation" class="math-explanation-panel">
+    <!-- Redesigned Side Panel for Math Explanation -->
+    <div id="math-explanation" class="math-explanation-panel narrow">
       <div class="panel-header">
-        <h3>Mathematical Proof: Why is |OQ|/|OP| = 2?</h3>
-        <button id="close-math-panel" class="close-button">×</button>
+        <h3>数学证明: 为什么 |OQ|/|OP| = 2?</h3>
+        <div class="panel-controls">
+          <button id="resize-panel" class="resize-button" title="调整面板宽度">↔️</button>
+          <button id="close-math-panel" class="close-button" title="关闭">×</button>
+        </div>
       </div>
       <div id="math-content" class="math-content">
         <!-- Content will be populated by JavaScript -->
@@ -411,7 +491,7 @@
 
   <footer>
     <div class="container">
-      <p>&copy; 2025 Math Visualizations</p>
+      <p>&copy; 2025 数学可视化</p>
     </div>
   </footer>
 
@@ -426,5 +506,62 @@
   <script src="/js/problems/ellipse-ratio-problem/step-functions.js"></script>
   <script src="/js/problems/ellipse-ratio-problem/math-solution.js"></script>
   <script src="/js/problems/ellipse-ratio-problem/index.js"></script>
+  
+  <!-- Add script for problem description toggle and math panel controls -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Problem description toggle
+      const problemDescription = document.querySelector('.problem-description');
+      const toggleButton = document.querySelector('.toggle-description');
+      
+      if (toggleButton && problemDescription) {
+        toggleButton.addEventListener('click', function() {
+          problemDescription.classList.toggle('expanded');
+          toggleButton.textContent = problemDescription.classList.contains('expanded') ? '−' : '⋯';
+        });
+      }
+      
+      // Math explanation panel functions
+      const mathPanel = document.getElementById('math-explanation');
+      const showMathButton = document.getElementById('show-math-button');
+      const closeMathButton = document.getElementById('close-math-panel');
+      const resizeButton = document.getElementById('resize-panel');
+      
+      // Replace original showMathematicalExplanation function
+      window.showMathematicalExplanation = function() {
+        mathPanel.classList.add('visible');
+      };
+      
+      // Replace original hideMathematicalExplanation function
+      window.hideMathematicalExplanation = function() {
+        mathPanel.classList.remove('visible');
+      };
+      
+      // Resize panel function
+      if (resizeButton) {
+        resizeButton.addEventListener('click', function() {
+          if (mathPanel.classList.contains('narrow')) {
+            mathPanel.classList.remove('narrow');
+            mathPanel.classList.add('normal');
+          } else if (mathPanel.classList.contains('normal')) {
+            mathPanel.classList.remove('normal');
+            mathPanel.classList.add('wide');
+          } else {
+            mathPanel.classList.remove('wide');
+            mathPanel.classList.add('narrow');
+          }
+        });
+      }
+      
+      // Ensure showMathButton and closeMathButton are properly set up
+      if (showMathButton) {
+        showMathButton.addEventListener('click', window.showMathematicalExplanation);
+      }
+      
+      if (closeMathButton) {
+        closeMathButton.addEventListener('click', window.hideMathematicalExplanation);
+      }
+    });
+  </script>
 </body>
 </html>

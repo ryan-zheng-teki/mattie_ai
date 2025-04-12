@@ -1,17 +1,17 @@
 /**
- * Interactivity functions for the Ellipse Ratio Problem visualization
+ * 椭圆比值问题可视化的交互功能
  */
 
-// Make point P draggable along ellipse C
+// 使点 P 沿椭圆 C 可拖动
 function makePointPDraggable() {
   if (!elements.pointP || isDraggable) return;
   
   isDraggable = true;
   
-  // Make P draggable
+  // 使 P 可拖动
   elements.pointP.draggable(true);
   
-  // Add visual cue that point is draggable
+  // 添加点可拖动的视觉提示
   elements.pointP.on('mouseover', function() {
     document.body.style.cursor = 'pointer';
     this.strokeEnabled(true);
@@ -28,33 +28,33 @@ function makePointPDraggable() {
     layer.batchDraw();
   });
   
-  // Update construction when P is dragged
+  // 当 P 被拖动时更新构造
   let dragThrottleTimeout = null;
   
   elements.pointP.on('dragmove', function() {
-    // Clear any existing timeout
+    // 清除任何现有超时
     if (dragThrottleTimeout) clearTimeout(dragThrottleTimeout);
     
-    // Set new timeout to update construction
+    // 设置新的超时以更新构造
     dragThrottleTimeout = setTimeout(() => {
-      // Constrain P to ellipse C
+      // 将 P 限制在椭圆 C 上
       constrainPointToEllipseC(this);
       
-      // Update rays and point Q
+      // 更新射线和点 Q
       updateRayOPAndPointQ();
       
-      // Update ratio display
+      // 更新比值显示
       updateRatioDisplay();
       
       layer.batchDraw();
-    }, 10); // 10ms throttling for smooth performance
+    }, 10); // 10ms 节流以获得流畅的性能
   });
   
-  // Add drag help indicator
+  // 添加拖动帮助指示器
   const dragHelp = new Konva.Text({
     x: 20,
     y: 60,
-    text: "Drag point P along ellipse C to see the constant ratio",
+    text: "沿椭圆 C 拖动点 P 以查看恒定比值",
     fontSize: 16,
     fill: '#777',
     padding: 10,
@@ -68,7 +68,7 @@ function makePointPDraggable() {
   layer.add(dragHelp);
   elements.dragHelp = dragHelp;
   
-  // Show a brief animation on P to indicate it's draggable
+  // 在 P 上显示简短动画以指示其可拖动
   gsap.to(elements.pointP, {
     scaleX: 1.3,
     scaleY: 1.3,
@@ -81,57 +81,57 @@ function makePointPDraggable() {
   layer.batchDraw();
 }
 
-// Constrain point P to always stay on ellipse C
+// 限制点 P 始终保持在椭圆 C 上
 function constrainPointToEllipseC(pointObject) {
-  // Get current position relative to origin
+  // 获取相对于原点的当前位置
   const ox = config.origin.x;
   const oy = config.origin.y;
   const px = pointObject.x();
   const py = pointObject.y();
   
-  // Calculate angle from center to current position
-  let angle = Math.atan2(-(py - oy), px - ox); // Negative for y because canvas y is inverted
+  // 计算从中心到当前位置的角度
+  let angle = Math.atan2(-(py - oy), px - ox); // 由于画布 y 是倒置的，y 为负数
   
-  // Calculate the constrained position on ellipse C
+  // 计算椭圆 C 上的受限位置
   const x = ox + config.scale * config.ellipseC.a * Math.cos(angle);
   const y = oy - config.scale * config.ellipseC.b * Math.sin(angle);
   
-  // Update point position
+  // 更新点位置
   pointObject.x(x);
   pointObject.y(y);
   
-  // Update text label position
+  // 更新文本标签位置
   if (elements.textP) {
     elements.textP.x(x + 10);
     elements.textP.y(y - 20);
   }
   
-  // Update config point
+  // 更新配置点
   config.pointP = { x, y };
   
   return { x, y, angle };
 }
 
-// Update ray OP and calculate point Q
+// 更新射线 OP 并计算点 Q
 function updateRayOPAndPointQ() {
   const ox = config.origin.x;
   const oy = config.origin.y;
   const px = config.pointP.x;
   const py = config.pointP.y;
   
-  // Calculate the ray vector
+  // 计算射线向量
   const rayVector = { x: px - ox, y: py - oy };
   
-  // Calculate point Q (exactly twice as far along the ray)
+  // 计算点 Q（沿射线正好是两倍远）
   const qx = ox + 2 * rayVector.x;
   const qy = oy + 2 * rayVector.y;
   
-  // Update config point Q
+  // 更新配置点 Q
   config.pointQ = { x: qx, y: qy };
   
-  // Update visual elements if they exist
+  // 如果存在，更新视觉元素
   if (elements.rayOP) {
-    // For visual clarity, extend the ray slightly beyond Q
+    // 为了视觉清晰，将射线稍微延伸超过 Q
     const extendedQx = ox + 2.5 * rayVector.x;
     const extendedQy = oy + 2.5 * rayVector.y;
     elements.rayOP.points([ox, oy, extendedQx, extendedQy]);
@@ -148,7 +148,7 @@ function updateRayOPAndPointQ() {
   }
 }
 
-// Update the ratio display with the current values
+// 用当前值更新比值显示
 function updateRatioDisplay() {
   const ox = config.origin.x;
   const oy = config.origin.y;
@@ -157,14 +157,14 @@ function updateRatioDisplay() {
   const qx = config.pointQ.x;
   const qy = config.pointQ.y;
   
-  // Calculate distances
+  // 计算距离
   const distOP = Math.sqrt(Math.pow(px - ox, 2) + Math.pow(py - oy, 2));
   const distOQ = Math.sqrt(Math.pow(qx - ox, 2) + Math.pow(qy - oy, 2));
   
-  // Calculate ratio
+  // 计算比值
   const ratio = distOQ / distOP;
   
-  // Update HTML display
+  // 更新 HTML 显示
   const ratioDisplay = document.getElementById('ratio-display');
   const ratioValue = document.getElementById('ratio-value');
   
@@ -174,27 +174,27 @@ function updateRatioDisplay() {
   }
 }
 
-// Toggle interactivity - enable/disable drag mode
+// 切换交互性 - 启用/禁用拖动模式
 function toggleInteractivity(forceState) {
   if (forceState === false || isDraggable) {
-    // Disable drag mode
+    // 禁用拖动模式
     isDraggable = false;
     
     if (elements.pointP) {
       elements.pointP.draggable(false);
-      // Remove event listeners (optional - if causing issues)
+      // 移除事件监听器（可选 - 如果导致问题）
       elements.pointP.off('mouseover');
       elements.pointP.off('mouseout');
       elements.pointP.off('dragmove');
     }
     
-    // Remove drag help
+    // 移除拖动帮助
     if (elements.dragHelp) {
       elements.dragHelp.destroy();
       elements.dragHelp = null;
     }
   } else {
-    // Enable drag mode if we're at step 5 (requires previous steps to be complete)
+    // 如果我们在步骤 5（需要先完成前面的步骤），则启用拖动模式
     if (currentActiveStep >= 3 && elements.pointP) {
       makePointPDraggable();
     }
