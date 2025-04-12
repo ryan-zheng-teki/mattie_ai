@@ -9,78 +9,145 @@
 </head>
 <body>
     <div id="header">
-        <h1>Ion Formation Visualizer</h1>
-        <p>See how atoms gain or lose electrons to form ions with stable electron configurations</p>
+        <h1>Ion Formation Visualizer <span class="science-icon">⚛️</span></h1>
+        <p>Watch atoms gain or lose electrons to become stable ions!</p>
     </div>
     
     <div class="main-container">
         <div id="controls">
             <div class="control-group">
-                <label for="element-select">Select Element:</label>
+                <label for="element-select">Pick an Element:</label>
                 <select id="element-select">
-                    <option value="Na">Sodium (Na)</option>
-                    <option value="Cl">Chlorine (Cl)</option>
-                    <option value="Mg">Magnesium (Mg)</option>
-                    <option value="Ca">Calcium (Ca)</option>
-                    <option value="K">Potassium (K)</option>
-                    <option value="F">Fluorine (F)</option>
-                    <option value="Al">Aluminum (Al)</option>
-                    <option value="O">Oxygen (O)</option>
+                    <option value="Na">Sodium (Na) 🧂</option>
+                    <option value="Cl">Chlorine (Cl) 🏊</option>
+                    <option value="Mg">Magnesium (Mg) 💪</option>
+                    <option value="Ca">Calcium (Ca) 🥛</option>
+                    <option value="K">Potassium (K) 🍌</option>
+                    <option value="F">Fluorine (F) 🦷</option>
+                    <option value="Al">Aluminum (Al) 🥫</option>
+                    <option value="O">Oxygen (O) 💨</option>
                 </select>
             </div>
             
             <div class="control-group">
-                <label for="state-select">Select State:</label>
+                <label for="state-select">Choose State:</label>
                 <select id="state-select">
                     <option value="neutral">Neutral Atom</option>
                     <option value="ion">Ion</option>
                 </select>
             </div>
             
-            <button id="animate-button">Show Ionization Process</button>
-            <button id="fullscreen-button" title="Toggle Fullscreen"><i class="fas fa-expand"></i></button>
+            <button id="animate-button" class="primary-button">
+                <i class="fas fa-play-circle"></i> Show Ionization
+            </button>
         </div>
         
-        <div id="info-panel">
-            <div id="element-info" class="info-box"></div>
-            <div id="charge-info" class="info-box"></div>
+        <div class="tabs-container">
+            <div class="tab active" data-tab="visualization">Atom View</div>
+            <div class="tab" data-tab="guide">How It Works</div>
+            <div class="tab" data-tab="learn">Fun Facts</div>
+            <div class="tab" data-tab="quiz">Quiz</div>
         </div>
         
-        <div id="visualization-container">
-            <!-- Three.js canvas will be inserted here -->
-            <div class="zoom-controls">
-                <button id="zoom-in" title="Zoom In"><i class="fas fa-plus"></i></button>
-                <button id="zoom-out" title="Zoom Out"><i class="fas fa-minus"></i></button>
+        <div class="tab-content active" id="visualization-tab">
+            <div id="info-panel">
+                <div id="element-info" class="info-box"></div>
+                <div id="charge-info" class="info-box"></div>
+            </div>
+            
+            <div id="visualization-container">
+                <!-- Three.js canvas will be inserted here -->
+                <div id="animation-labels"></div>
+                <div id="animation-narration"></div>
+                <div class="animation-controls">
+                    <button id="step-by-step-toggle" title="Step-by-Step Mode">
+                        <i class="fas fa-shoe-prints"></i> Step-by-Step
+                    </button>
+                    <button id="next-step" title="Next Step" disabled>
+                        <i class="fas fa-step-forward"></i> Next
+                    </button>
+                    <button id="zoom-in" title="Zoom In">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button id="zoom-out" title="Zoom Out">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <button id="fullscreen-button" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
             </div>
         </div>
         
-        <div class="collapsible-section">
-            <div class="collapsible-header" id="legend-header">
-                <h3>Visualization Guide</h3>
-                <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
-            </div>
-            <div class="collapsible-content" id="legend">
-                <ul>
-                    <li><span class="legend-item">Colored shells</span>: Electron orbitals (red = 1st shell, green = 2nd shell, blue = 3rd shell, etc.)</li>
-                    <li><span class="legend-item">Colored spheres</span>: Electrons (color matches their shell)</li>
-                    <li><span class="legend-item">Central sphere</span>: Atomic nucleus</li>
-                    <li><span class="legend-item">+ or - symbols</span>: Ion charge indicator (appears only for ions)</li>
-                </ul>
+        <div class="tab-content" id="guide-tab">
+            <div class="guide-content">
+                <h3>How to Read the Atom View</h3>
+                <div class="guide-grid">
+                    <div class="guide-item">
+                        <div class="guide-icon nucleus-icon"></div>
+                        <div class="guide-text">
+                            <h4>Nucleus</h4>
+                            <p>The center of the atom where protons and neutrons live!</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <div class="guide-icon shell-icon"></div>
+                        <div class="guide-text">
+                            <h4>Shells</h4>
+                            <p>Colored rings where electrons orbit - each shell can only hold so many electrons.</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <div class="guide-icon electron-icon"></div>
+                        <div class="guide-text">
+                            <h4>Electrons</h4>
+                            <p>Tiny particles that buzz around the nucleus. When atoms share or trade them, they form ions!</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <div class="guide-icon charge-icon"></div>
+                        <div class="guide-text">
+                            <h4>Charge</h4>
+                            <p>The + or - signs show if the atom lost or gained electrons.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <div class="collapsible-section">
-            <div class="collapsible-header" id="educational-header">
-                <h3>About Ions</h3>
-                <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+        <div class="tab-content" id="learn-tab">
+            <div class="learn-content">
+                <h3>Fun Facts About Ions</h3>
+                <div class="fun-fact">
+                    <i class="fas fa-bolt fact-icon"></i>
+                    <p>Ions are atoms that have gained or lost electrons. It's like having too many or too few friends at a party!</p>
+                </div>
+                <div class="fun-fact">
+                    <i class="fas fa-plus-circle fact-icon"></i>
+                    <p><strong>Cations</strong> lose electrons and become positively charged. They're like atoms that gave away some presents.</p>
+                </div>
+                <div class="fun-fact">
+                    <i class="fas fa-minus-circle fact-icon"></i>
+                    <p><strong>Anions</strong> gain electrons and become negatively charged. They're like atoms that received extra gifts!</p>
+                </div>
+                <div class="fun-fact">
+                    <i class="fas fa-star fact-icon"></i>
+                    <p>Atoms form ions to have full outer shells. It's like trying to complete a sticker collection!</p>
+                </div>
+                <div class="fun-fact">
+                    <i class="fas fa-utensils fact-icon"></i>
+                    <p>The salt on your food (NaCl) is made of sodium and chloride ions stuck together!</p>
+                </div>
             </div>
-            <div class="collapsible-content" id="educational-content">
-                <p>Ions are atoms that have gained or lost electrons, resulting in a net electrical charge.</p>
-                <ul>
-                    <li><strong>Cations</strong> are positively charged ions that have lost electrons. They are indicated with a <strong>+</strong> symbol.</li>
-                    <li><strong>Anions</strong> are negatively charged ions that have gained electrons. They are indicated with a <strong>-</strong> symbol.</li>
-                </ul>
-                <p>Atoms tend to gain or lose electrons to achieve a stable electron configuration, typically with a filled outer shell (octet rule).</p>
+        </div>
+        
+        <div class="tab-content" id="quiz-tab">
+            <div class="quiz-container">
+                <h3>Test Your Knowledge!</h3>
+                <div id="quiz-question"></div>
+                <div id="quiz-options"></div>
+                <div id="quiz-feedback"></div>
+                <button id="next-question" class="primary-button">Next Question</button>
             </div>
         </div>
     </div>
