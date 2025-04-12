@@ -12,7 +12,7 @@ body {
 #header {
     background-color: #3a4a6d;
     color: white;
-    padding: 15px;
+    padding: 12px;
     text-align: center;
 }
 
@@ -23,19 +23,25 @@ body {
 
 #header p {
     margin: 5px 0 0;
-    font-size: 16px;
+    font-size: 14px;
     opacity: 0.9;
 }
 
+.main-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
 #controls {
-    padding: 15px;
+    padding: 10px;
     background-color: #e0e0e0;
     border-bottom: 1px solid #ccc;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 10px;
 }
 
 .control-group {
@@ -50,7 +56,7 @@ body {
 }
 
 select, button {
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 14px;
@@ -61,6 +67,9 @@ button {
     color: white;
     cursor: pointer;
     transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 button:hover {
@@ -72,17 +81,22 @@ button:disabled {
     cursor: not-allowed;
 }
 
+#fullscreen-button {
+    padding: 6px 8px;
+    margin-left: auto;
+}
+
 #info-panel {
     display: flex;
     justify-content: space-between;
-    padding: 10px 15px;
+    padding: 8px 12px;
     background-color: #f8f8f8;
     border-bottom: 1px solid #ddd;
 }
 
 .info-box {
     flex: 1;
-    padding: 10px;
+    padding: 8px;
     margin: 0 5px;
     background-color: white;
     border-radius: 4px;
@@ -99,11 +113,43 @@ button:disabled {
 }
 
 #visualization-container {
-    height: 50vh;
-    min-height: 400px;
+    height: 70vh; /* Increased from 50vh */
+    min-height: 500px; /* Increased from 400px */
     position: relative;
     background-color: #000;
     overflow: hidden;
+    flex: 1;
+}
+
+#visualization-container.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+}
+
+.zoom-controls {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    z-index: 10;
+}
+
+.zoom-controls button {
+    padding: 5px;
+    width: 30px;
+    height: 30px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.zoom-controls button:hover {
+    opacity: 1;
 }
 
 canvas {
@@ -112,17 +158,47 @@ canvas {
     height: 100%;
 }
 
-#legend {
-    padding: 15px;
+.collapsible-section {
     background-color: #f8f8f8;
     border-top: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
+    margin-bottom: 2px;
 }
 
-#legend h3 {
-    margin-top: 0;
+.collapsible-header {
+    padding: 10px 15px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+}
+
+.collapsible-header h3 {
+    margin: 0;
     color: #3a4a6d;
     font-size: 16px;
+}
+
+.toggle-icon {
+    transition: transform 0.3s;
+}
+
+.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.collapsible-content {
+    padding: 0 15px;
+    max-height: 500px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.collapsed .collapsible-content {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
 }
 
 #legend ul {
@@ -143,17 +219,24 @@ canvas {
 }
 
 #educational-content {
-    padding: 20px;
+    padding-bottom: 15px;
     background-color: white;
 }
 
 #educational-content h2 {
     color: #3a4a6d;
     margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+#educational-content p {
+    margin: 8px 0;
 }
 
 #educational-content ul {
     padding-left: 20px;
+    margin: 8px 0;
 }
 
 /* Specific styles for charge indicators */
@@ -171,6 +254,10 @@ canvas {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    #visualization-container {
+        height: 60vh; /* Smaller on mobile but still larger than original */
+    }
+    
     #controls {
         flex-direction: column;
         align-items: stretch;
@@ -178,7 +265,7 @@ canvas {
     
     .control-group {
         margin-right: 0;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
         justify-content: space-between;
     }
     
@@ -196,5 +283,13 @@ canvas {
     
     #legend li {
         flex: 1 1 100%;
+    }
+    
+    #fullscreen-button {
+        margin-left: 0;
+    }
+    
+    .collapsible-header h3 {
+        font-size: 14px;
     }
 }

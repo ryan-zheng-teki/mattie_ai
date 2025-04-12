@@ -174,6 +174,7 @@ let chargeIndicator = null;
 let currentElement = null;
 let currentState = 'neutral';
 let animationInProgress = false;
+let isFullscreen = false;
 
 // --- Initialization ---
 function init() {
@@ -212,6 +213,7 @@ function init() {
     controls.screenSpacePanning = false;
     controls.minDistance = 3;
     controls.maxDistance = 50;
+    controls.enableZoom = true;
     
     // Add atom group to scene
     scene.add(currentAtomGroup);
@@ -222,6 +224,16 @@ function init() {
     document.getElementById('state-select').addEventListener('change', onStateChange);
     animateButton.addEventListener('click', animateIonization);
     
+    // Set up collapsible sections
+    setupCollapsibleSections();
+    
+    // Set up fullscreen button
+    document.getElementById('fullscreen-button').addEventListener('click', toggleFullscreen);
+    
+    // Set up zoom buttons
+    document.getElementById('zoom-in').addEventListener('click', () => zoomCamera(0.8));
+    document.getElementById('zoom-out').addEventListener('click', () => zoomCamera(1.2));
+    
     // Initial display
     const initialSelection = 'Na'; // Start with Sodium
     document.getElementById('element-select').value = initialSelection;
@@ -229,6 +241,79 @@ function init() {
     
     console.log("Initialization complete.");
     animate();
+}
+
+// --- UI Enhancement Functions ---
+
+// Set up collapsible sections
+function setupCollapsibleSections() {
+    const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+    
+    collapsibleHeaders.forEach(header => {
+        // Start with sections collapsed
+        header.classList.add('collapsed');
+        header.nextElementSibling.style.maxHeight = '0px';
+        header.nextElementSibling.style.paddingTop = '0px';
+        header.nextElementSibling.style.paddingBottom = '0px';
+        
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            header.classList.toggle('collapsed');
+            
+            if (header.classList.contains('collapsed')) {
+                content.style.maxHeight = '0px';
+                content.style.paddingTop = '0px';
+                content.style.paddingBottom = '0px';
+            } else {
+                content.style.maxHeight = content.scrollHeight + 'px';
+                content.style.paddingTop = '10px';
+                content.style.paddingBottom = '10px';
+            }
+        });
+    });
+}
+
+// Toggle fullscreen mode
+function toggleFullscreen() {
+    const container = document.getElementById('visualization-container');
+    const button = document.getElementById('fullscreen-button');
+    const icon = button.querySelector('i');
+    
+    if (!isFullscreen) {
+        // Enter fullscreen
+        container.classList.add('fullscreen');
+        icon.classList.remove('fa-expand');
+        icon.classList.add('fa-compress');
+    } else {
+        // Exit fullscreen
+        container.classList.remove('fullscreen');
+        icon.classList.remove('fa-compress');
+        icon.classList.add('fa-expand');
+    }
+    
+    isFullscreen = !isFullscreen;
+    
+    // Resize renderer after a brief delay to ensure DOM has updated
+    setTimeout(() => {
+        onWindowResize();
+    }, 100);
+}
+
+// Zoom camera in or out
+function zoomCamera(factor) {
+    if (!camera || !controls) return;
+    
+    // Move camera closer or further
+    camera.position.z *= factor;
+    
+    // Ensure we respect min/max limits
+    if (camera.position.z < controls.minDistance) {
+        camera.position.z = controls.minDistance;
+    } else if (camera.position.z > controls.maxDistance) {
+        camera.position.z = controls.maxDistance;
+    }
+    
+    camera.updateProjectionMatrix();
 }
 
 // --- Atom and Ion Visualization ---

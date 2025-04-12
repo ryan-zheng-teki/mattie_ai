@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ion Formation Visualizer</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div id="header">
@@ -12,59 +13,76 @@
         <p>See how atoms gain or lose electrons to form ions with stable electron configurations</p>
     </div>
     
-    <div id="controls">
-        <div class="control-group">
-            <label for="element-select">Select Element:</label>
-            <select id="element-select">
-                <option value="Na">Sodium (Na)</option>
-                <option value="Cl">Chlorine (Cl)</option>
-                <option value="Mg">Magnesium (Mg)</option>
-                <option value="Ca">Calcium (Ca)</option>
-                <option value="K">Potassium (K)</option>
-                <option value="F">Fluorine (F)</option>
-                <option value="Al">Aluminum (Al)</option>
-                <option value="O">Oxygen (O)</option>
-            </select>
+    <div class="main-container">
+        <div id="controls">
+            <div class="control-group">
+                <label for="element-select">Select Element:</label>
+                <select id="element-select">
+                    <option value="Na">Sodium (Na)</option>
+                    <option value="Cl">Chlorine (Cl)</option>
+                    <option value="Mg">Magnesium (Mg)</option>
+                    <option value="Ca">Calcium (Ca)</option>
+                    <option value="K">Potassium (K)</option>
+                    <option value="F">Fluorine (F)</option>
+                    <option value="Al">Aluminum (Al)</option>
+                    <option value="O">Oxygen (O)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="state-select">Select State:</label>
+                <select id="state-select">
+                    <option value="neutral">Neutral Atom</option>
+                    <option value="ion">Ion</option>
+                </select>
+            </div>
+            
+            <button id="animate-button">Show Ionization Process</button>
+            <button id="fullscreen-button" title="Toggle Fullscreen"><i class="fas fa-expand"></i></button>
         </div>
         
-        <div class="control-group">
-            <label for="state-select">Select State:</label>
-            <select id="state-select">
-                <option value="neutral">Neutral Atom</option>
-                <option value="ion">Ion</option>
-            </select>
+        <div id="info-panel">
+            <div id="element-info" class="info-box"></div>
+            <div id="charge-info" class="info-box"></div>
         </div>
         
-        <button id="animate-button">Show Ionization Process</button>
-    </div>
-    
-    <div id="info-panel">
-        <div id="element-info" class="info-box"></div>
-        <div id="charge-info" class="info-box"></div>
-    </div>
-    
-    <div id="visualization-container">
-        <!-- Three.js canvas will be inserted here -->
-    </div>
-    
-    <div id="legend">
-        <h3>Visualization Guide</h3>
-        <ul>
-            <li><span class="legend-item">Colored shells</span>: Electron orbitals (red = 1st shell, green = 2nd shell, blue = 3rd shell, etc.)</li>
-            <li><span class="legend-item">Colored spheres</span>: Electrons (color matches their shell)</li>
-            <li><span class="legend-item">Central sphere</span>: Atomic nucleus</li>
-            <li><span class="legend-item">+ or - symbols</span>: Ion charge indicator (appears only for ions)</li>
-        </ul>
-    </div>
-    
-    <div id="educational-content">
-        <h2>About Ions</h2>
-        <p>Ions are atoms that have gained or lost electrons, resulting in a net electrical charge.</p>
-        <ul>
-            <li><strong>Cations</strong> are positively charged ions that have lost electrons. They are indicated with a <strong>+</strong> symbol.</li>
-            <li><strong>Anions</strong> are negatively charged ions that have gained electrons. They are indicated with a <strong>-</strong> symbol.</li>
-        </ul>
-        <p>Atoms tend to gain or lose electrons to achieve a stable electron configuration, typically with a filled outer shell (octet rule).</p>
+        <div id="visualization-container">
+            <!-- Three.js canvas will be inserted here -->
+            <div class="zoom-controls">
+                <button id="zoom-in" title="Zoom In"><i class="fas fa-plus"></i></button>
+                <button id="zoom-out" title="Zoom Out"><i class="fas fa-minus"></i></button>
+            </div>
+        </div>
+        
+        <div class="collapsible-section">
+            <div class="collapsible-header" id="legend-header">
+                <h3>Visualization Guide</h3>
+                <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="collapsible-content" id="legend">
+                <ul>
+                    <li><span class="legend-item">Colored shells</span>: Electron orbitals (red = 1st shell, green = 2nd shell, blue = 3rd shell, etc.)</li>
+                    <li><span class="legend-item">Colored spheres</span>: Electrons (color matches their shell)</li>
+                    <li><span class="legend-item">Central sphere</span>: Atomic nucleus</li>
+                    <li><span class="legend-item">+ or - symbols</span>: Ion charge indicator (appears only for ions)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="collapsible-section">
+            <div class="collapsible-header" id="educational-header">
+                <h3>About Ions</h3>
+                <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="collapsible-content" id="educational-content">
+                <p>Ions are atoms that have gained or lost electrons, resulting in a net electrical charge.</p>
+                <ul>
+                    <li><strong>Cations</strong> are positively charged ions that have lost electrons. They are indicated with a <strong>+</strong> symbol.</li>
+                    <li><strong>Anions</strong> are negatively charged ions that have gained electrons. They are indicated with a <strong>-</strong> symbol.</li>
+                </ul>
+                <p>Atoms tend to gain or lose electrons to achieve a stable electron configuration, typically with a filled outer shell (octet rule).</p>
+            </div>
+        </div>
     </div>
 
     <!-- Import Three.js and Tween.js -->
