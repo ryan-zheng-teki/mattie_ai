@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atoms Visualizer</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div id="header">
+        <h1>Atoms Visualizer <span class="science-icon">⚛️</span></h1>
+        <p>Explore atomic structures and electron shells!</p>
+    </div>
+    
+    <div class="main-container">
+        <div id="controls">
+            <div class="control-group">
+                <label for="element-select">Pick an Element:</label>
+                <select id="element-select">
+                    <option value="H">Hydrogen (H) 🔥</option>
+                    <option value="He">Helium (He) 🎈</option>
+                    <option value="Li">Lithium (Li) 🔋</option>
+                    <option value="Be">Beryllium (Be) 💎</option>
+                    <option value="B">Boron (B) 🔬</option>
+                    <option value="C">Carbon (C) 💍</option>
+                    <option value="N">Nitrogen (N) 🌱</option>
+                    <option value="O">Oxygen (O) 💨</option>
+                    <option value="F">Fluorine (F) 🦷</option>
+                    <option value="Ne">Neon (Ne) 💡</option>
+                    <option value="Na">Sodium (Na) 🧂</option>
+                    <option value="Mg">Magnesium (Mg) 💪</option>
+                    <option value="Al">Aluminum (Al) 🥫</option>
+                    <option value="Si">Silicon (Si) 🖥️</option>
+                    <option value="P">Phosphorus (P) 🔥</option>
+                    <option value="S">Sulfur (S) 🥚</option>
+                    <option value="Cl">Chlorine (Cl) 🏊</option>
+                    <option value="Ar">Argon (Ar) 🎈</option>
+                    <option value="K">Potassium (K) 🍌</option>
+                    <option value="Ca">Calcium (Ca) 🥛</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="speed-control">Electron Speed:</label>
+                <input type="range" id="speed-control" min="0.002" max="1.0" step="0.001" value="0.1">
+            </div>
+        </div>
+        
+        <div class="tabs-container">
+            <div class="tab active" data-tab="visualization">Atom View</div>
+            <div class="tab" data-tab="guide">How It Works</div>
+            <div class="tab" data-tab="learn">Fun Facts</div>
+            <div class="tab" data-tab="quiz">Quiz</div>
+        </div>
+        
+        <div class="tab-content active" id="visualization-tab">
+            <div class="split-view">
+                <div class="animation-container">
+                    <div id="visualization-container">
+                        <!-- Three.js canvas will be inserted here -->
+                        <div id="temporary-labels"></div>
+                        <div id="animation-narration"></div>
+                        <div class="animation-controls">
+                            <button id="zoom-in" title="Zoom In">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button id="zoom-out" title="Zoom Out">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button id="fullscreen-button" title="Fullscreen">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="explanation-panel">
+                    <div class="panel-section">
+                        <h3>Element Info</h3>
+                        <div id="element-info" class="info-box"></div>
+                    </div>
+                    
+                    <div class="panel-section">
+                        <h3>About This Element</h3>
+                        <div id="explanation-box"></div>
+                    </div>
+                    
+                    <div class="panel-section">
+                        <h3>Legend</h3>
+                        <div class="legend-items">
+                            <div class="legend-item">
+                                <div class="icon nucleus-icon">●</div>
+                                <span>Nucleus</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="icon electron-icon">•</div>
+                                <span>Electron</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="icon shell-icon">◯</div>
+                                <span>Electron Shell</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-section">
+                        <h3>Shell Status</h3>
+                        <div id="shell-status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="guide-tab">
+            <div class="guide-content">
+                <h3>How to Read the Atom View</h3>
+                <div class="guide-grid">
+                    <div class="guide-item">
+                        <div class="guide-icon nucleus-icon"></div>
+                        <div class="guide-text">
+                            <h4>Nucleus</h4>
+                            <p>The center of the atom where protons and neutrons live!</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <div class="guide-icon shell-icon"></div>
+                        <div class="guide-text">
+                            <h4>Shells</h4>
+                            <p>Colored rings where electrons orbit - each shell can only hold so many electrons.</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <div class="guide-icon electron-icon"></div>
+                        <div class="guide-text">
+                            <h4>Electrons</h4>
+                            <p>Tiny particles that buzz around the nucleus in specific shells.</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <div class="guide-icon">
+                            <i class="fas fa-hand-pointer"></i>
+                        </div>
+                        <div class="guide-text">
+                            <h4>Controls</h4>
+                            <p>Drag to rotate, scroll to zoom, and use the control buttons for more options!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="learn-tab">
+            <div class="learn-content">
+                <h3>Fun Facts About Atoms</h3>
+                <div class="fun-fact">
+                    <i class="fas fa-atom fact-icon"></i>
+                    <p>If an atom were the size of a football stadium, the nucleus would be the size of a pea in the center!</p>
+                </div>
+                <div class="fun-fact">
+                    <i class="fas fa-bolt fact-icon"></i>
+                    <p>Electrons move incredibly fast, almost at the speed of light, as they orbit the nucleus.</p>
+                </div>
+                <div class="fun-fact">
+                    <i class="fas fa-balance-scale fact-icon"></i>
+                    <p>Despite being much smaller than protons, electrons have the same amount of electric charge (but opposite).</p>
+                </div>
+                <div class="fun-fact">
+                    <i class="fas fa-star fact-icon"></i>
+                    <p>The number of electrons in an atom's outermost shell determines many of its chemical properties!</p>
+                </div>
+                <div class="fun-fact">
+                    <i class="fas fa-ruler fact-icon"></i>
+                    <p>Atoms are so small that a line of 1 million atoms would only be about 1 millimeter long!</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="quiz-tab">
+            <div class="quiz-container">
+                <h3>Test Your Knowledge!</h3>
+                <div id="quiz-question"></div>
+                <div id="quiz-options"></div>
+                <div id="quiz-feedback"></div>
+                <button id="next-question" class="primary-button">Next Question</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Three.js and Tween.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "tween": "https://unpkg.com/@tweenjs/tween.js@23.1.1/dist/tween.esm.js"
+            }
+        }
+    </script>
+
+    <!-- Application scripts -->
+    <script type="module" src="js/elements-data.js"></script>
+    <script type="module" src="js/ui.js"></script>
+    <script type="module" src="js/visualization.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
