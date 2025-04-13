@@ -41,26 +41,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted } from 'vue'
 import { useAtomVisualization } from '~/composables/useAtomVisualization'
 
 const { 
   container, 
   isFullscreen,
   initVisualization, 
-  updateVisualization, 
-  animate, 
   toggleFullscreen, 
   zoomCamera,
-  updateElectronSpeed
+  startAnimation
 } = useAtomVisualization()
 
-// Expose methods to parent components
-defineExpose({
-  initVisualization,
-  updateVisualization,
-  animate,
-  updateElectronSpeed
+// Initialize visualization when component is mounted
+onMounted(() => {
+  // Initialize the Three.js scene and components
+  initVisualization()
+  
+  // Start the animation loop
+  startAnimation()
 })
 </script>
 

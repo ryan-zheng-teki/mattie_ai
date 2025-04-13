@@ -3,10 +3,7 @@
     <AppHeader />
     
     <div class="main-container flex flex-col flex-1">
-      <AtomControls 
-        @element-change="onElementChange"
-        @speed-change="onSpeedChange"
-      />
+      <AtomControls />
       
       <TabsContainer initial-tab="visualization">
         <TabItem title="Atom View" name="visualization" :active="true">
@@ -33,8 +30,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useAtomsStore } from '~/stores/atoms'
+import { ref } from 'vue'
 
 // Components
 import AppHeader from '~/components/AppHeader.vue'
@@ -47,31 +43,8 @@ import GuideTab from '~/components/GuideTab.vue'
 import LearnTab from '~/components/LearnTab.vue'
 import QuizTab from '~/components/QuizTab.vue'
 
-const store = useAtomsStore()
+// Reference to visualization component (for DOM access only)
 const atomVisualization = ref(null)
-
-const onElementChange = (element) => {
-  if (atomVisualization.value) {
-    atomVisualization.value.updateVisualization(element)
-  }
-}
-
-const onSpeedChange = (speed) => {
-  if (atomVisualization.value) {
-    atomVisualization.value.updateElectronSpeed(speed)
-  }
-}
-
-onMounted(() => {
-  // Initialize the visualization
-  if (atomVisualization.value) {
-    atomVisualization.value.initVisualization()
-    atomVisualization.value.updateVisualization(store.currentElement)
-    
-    // Start animation loop
-    atomVisualization.value.animate()
-  }
-})
 </script>
 
 <style scoped>

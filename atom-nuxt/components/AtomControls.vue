@@ -20,15 +20,15 @@
         <button 
           id="slow-speed" 
           :class="['speed-button flex items-center gap-1.5 p-2 px-4 bg-white border-2 border-primary-dark rounded-lg text-base font-bold font-comic cursor-pointer transition-all shadow-sm', 
-                  { 'active': electronSpeed === 0.05 }]"
-          @click="setElectronSpeed(0.05)"
+                  { 'active': store.electronSpeed === 0.01 }]"
+          @click="setElectronSpeed(0.01)"
         >
           <i class="fas fa-walking"></i> Slow
         </button>
         <button 
           id="fast-speed" 
           :class="['speed-button flex items-center gap-1.5 p-2 px-4 bg-white border-2 border-primary-dark rounded-lg text-base font-bold font-comic cursor-pointer transition-all shadow-sm',
-                  { 'active': electronSpeed === 0.5 }]"
+                  { 'active': store.electronSpeed === 0.5 }]"
           @click="setElectronSpeed(0.5)"
         >
           <i class="fas fa-running"></i> Fast
@@ -39,14 +39,16 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed } from 'vue'
 import { useAtomsStore } from '~/stores/atoms'
 
-const emit = defineEmits(['element-change', 'speed-change'])
 const store = useAtomsStore()
 
-const selectedElement = ref(store.currentElement)
-const electronSpeed = ref(store.electronSpeed)
+// Use computed for the selected element to get/set through the store
+const selectedElement = computed({
+  get: () => store.currentElement,
+  set: (value) => store.setCurrentElement(value)
+})
 
 // Map of element symbols to emojis
 const elementEmojis = {
@@ -59,24 +61,15 @@ const elementEmojis = {
 const getEmoji = (symbol) => elementEmojis[symbol] || ''
 
 const onElementChange = () => {
-  store.setCurrentElement(selectedElement.value)
-  emit('element-change', selectedElement.value)
+  // No need for emit - the computed property already updates the store
+  console.log('Element changed to:', store.currentElement)
 }
 
 const setElectronSpeed = (speed) => {
-  electronSpeed.value = speed
+  // Update the store directly - no emit needed
   store.setElectronSpeed(speed)
-  emit('speed-change', speed)
+  console.log('Speed changed to:', speed)
 }
-
-// Watch for store changes
-watch(() => store.currentElement, (newElement) => {
-  selectedElement.value = newElement
-})
-
-watch(() => store.electronSpeed, (newSpeed) => {
-  electronSpeed.value = newSpeed
-})
 </script>
 
 <style scoped>

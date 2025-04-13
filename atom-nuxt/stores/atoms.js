@@ -264,16 +264,18 @@ export const useAtomsStore = defineStore('atoms', {
 
     // UI state
     currentElement: 'H',
-    electronSpeed: 0.05,
+    electronSpeed: 0.01, // Changed from 0.05 to 0.01 for more noticeable slow speed
     narrationTimeout: null
   }),
 
   actions: {
     setCurrentElement(element) {
       this.currentElement = element;
+      console.log('Store: current element set to', element);
     },
     setElectronSpeed(speed) {
       this.electronSpeed = speed;
+      console.log('Store: electron speed set to', speed);
     }
   },
 
