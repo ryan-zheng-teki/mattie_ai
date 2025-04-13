@@ -26,16 +26,7 @@ logs/
 ehthumbs.db
 Thumbs.db
 
-# Editor directories and files
-.idea/
-.vscode/
-*.swp
-*.swo
-.editorconfig
-
-# Build output
-dist/
-build/
+# Editor directories an>
 out/
 .next/
 
@@ -62,3 +53,4 @@ coverage/
 # Optional: Cached data
 .cache/
 uploads/
+**/.nuxt
