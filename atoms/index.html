@@ -18,32 +18,39 @@
             <div class="control-group">
                 <label for="element-select">Pick an Element:</label>
                 <select id="element-select">
-                    <option value="H">Hydrogen (H) 🔥</option>
-                    <option value="He">Helium (He) 🎈</option>
-                    <option value="Li">Lithium (Li) 🔋</option>
-                    <option value="Be">Beryllium (Be) 💎</option>
-                    <option value="B">Boron (B) 🔬</option>
-                    <option value="C">Carbon (C) 💍</option>
-                    <option value="N">Nitrogen (N) 🌱</option>
-                    <option value="O">Oxygen (O) 💨</option>
-                    <option value="F">Fluorine (F) 🦷</option>
-                    <option value="Ne">Neon (Ne) 💡</option>
-                    <option value="Na">Sodium (Na) 🧂</option>
-                    <option value="Mg">Magnesium (Mg) 💪</option>
-                    <option value="Al">Aluminum (Al) 🥫</option>
-                    <option value="Si">Silicon (Si) 🖥️</option>
-                    <option value="P">Phosphorus (P) 🔥</option>
-                    <option value="S">Sulfur (S) 🥚</option>
-                    <option value="Cl">Chlorine (Cl) 🏊</option>
-                    <option value="Ar">Argon (Ar) 🎈</option>
-                    <option value="K">Potassium (K) 🍌</option>
-                    <option value="Ca">Calcium (Ca) 🥛</option>
+                    <option value="H">Hydrogen (H) 🌋 (1)</option>
+                    <option value="He">Helium (He) 🎈 (2)</option>
+                    <option value="Li">Lithium (Li) 🔋 (3)</option>
+                    <option value="Be">Beryllium (Be) 🧪 (4)</option>
+                    <option value="B">Boron (B) 🔬 (5)</option>
+                    <option value="C">Carbon (C) 💍 (6)</option>
+                    <option value="N">Nitrogen (N) 🌱 (7)</option>
+                    <option value="O">Oxygen (O) 💨 (8)</option>
+                    <option value="F">Fluorine (F) 🦷 (9)</option>
+                    <option value="Ne">Neon (Ne) 💡 (10)</option>
+                    <option value="Na">Sodium (Na) 🧂 (11)</option>
+                    <option value="Mg">Magnesium (Mg) 💪 (12)</option>
+                    <option value="Al">Aluminum (Al) 🥫 (13)</option>
+                    <option value="Si">Silicon (Si) 💻 (14)</option>
+                    <option value="P">Phosphorus (P) 🌠 (15)</option>
+                    <option value="S">Sulfur (S) 🥚 (16)</option>
+                    <option value="Cl">Chlorine (Cl) 🧼 (17)</option>
+                    <option value="Ar">Argon (Ar) 🧊 (18)</option>
+                    <option value="K">Potassium (K) 🍌 (19)</option>
+                    <option value="Ca">Calcium (Ca) 🥛 (20)</option>
                 </select>
             </div>
             
             <div class="control-group">
-                <label for="speed-control">Electron Speed:</label>
-                <input type="range" id="speed-control" min="0.002" max="1.0" step="0.001" value="0.1">
+                <label>Electron Speed:</label>
+                <div class="speed-buttons">
+                    <button id="slow-speed" class="speed-button active">
+                        <i class="fas fa-walking"></i> Slow
+                    </button>
+                    <button id="fast-speed" class="speed-button">
+                        <i class="fas fa-running"></i> Fast
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -94,8 +101,20 @@
                                 <span>Nucleus</span>
                             </div>
                             <div class="legend-item">
-                                <div class="icon electron-icon">•</div>
-                                <span>Electron</span>
+                                <div class="icon electron-icon-1">•</div>
+                                <span>1st Shell Electron</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="icon electron-icon-2">•</div>
+                                <span>2nd Shell Electron</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="icon electron-icon-3">•</div>
+                                <span>3rd Shell Electron</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="icon electron-icon-4">•</div>
+                                <span>4th Shell Electron</span>
                             </div>
                             <div class="legend-item">
                                 <div class="icon shell-icon">◯</div>
@@ -131,10 +150,10 @@
                         </div>
                     </div>
                     <div class="guide-item">
-                        <div class="guide-icon electron-icon"></div>
+                        <div class="guide-icon electron-icon-2"></div>
                         <div class="guide-text">
                             <h4>Electrons</h4>
-                            <p>Tiny particles that buzz around the nucleus in specific shells.</p>
+                            <p>Tiny particles that buzz around the nucleus in specific shells. Different colors show which shell they belong to.</p>
                         </div>
                     </div>
                     <div class="guide-item">

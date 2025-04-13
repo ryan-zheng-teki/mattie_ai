@@ -18,22 +18,26 @@
             <div class="control-group">
                 <label for="element-select">Pick an Element:</label>
                 <select id="element-select">
-                    <option value="Na">Sodium (Na) 🧂</option>
-                    <option value="Cl">Chlorine (Cl) 🏊</option>
-                    <option value="Mg">Magnesium (Mg) 💪</option>
-                    <option value="Ca">Calcium (Ca) 🥛</option>
-                    <option value="K">Potassium (K) 🍌</option>
-                    <option value="F">Fluorine (F) 🦷</option>
-                    <option value="Al">Aluminum (Al) 🥫</option>
+                    <option value="H">Hydrogen (H) 🎈</option>
+                    <option value="He">Helium (He) 🎈</option>
+                    <option value="Li">Lithium (Li) 🔋</option>
+                    <option value="Be">Beryllium (Be) 💡</option>
+                    <option value="B">Boron (B) 🎯</option>
+                    <option value="C">Carbon (C) 💎</option>
+                    <option value="N">Nitrogen (N) 🌱</option>
                     <option value="O">Oxygen (O) 💨</option>
-                </select>
-            </div>
-            
-            <div class="control-group">
-                <label for="state-select">Choose State:</label>
-                <select id="state-select">
-                    <option value="neutral">Neutral Atom</option>
-                    <option value="ion">Ion</option>
+                    <option value="F">Fluorine (F) 🦷</option>
+                    <option value="Ne">Neon (Ne) 💡</option>
+                    <option value="Na">Sodium (Na) 🧂</option>
+                    <option value="Mg">Magnesium (Mg) 💪</option>
+                    <option value="Al">Aluminum (Al) 🥫</option>
+                    <option value="Si">Silicon (Si) 💻</option>
+                    <option value="P">Phosphorus (P) 🔥</option>
+                    <option value="S">Sulfur (S) 🥚</option>
+                    <option value="Cl">Chlorine (Cl) 🏊</option>
+                    <option value="Ar">Argon (Ar) 💡</option>
+                    <option value="K">Potassium (K) 🍌</option>
+                    <option value="Ca">Calcium (Ca) 🥛</option>
                 </select>
             </div>
             
@@ -44,10 +48,6 @@
             
             <button id="animate-button" class="primary-button">
                 <i class="fas fa-play-circle"></i> Show Ionization
-            </button>
-            
-            <button id="view-toggle" class="toggle-button" title="Toggle Detail Level">
-                <i class="fas fa-eye"></i> <span id="view-mode-text">Simple View</span>
             </button>
         </div>
         
@@ -65,13 +65,13 @@
                         <!-- Three.js canvas will be inserted here -->
                         <div id="temporary-labels"></div>
                         <div id="animation-narration"></div>
+                        <div id="progress-indicator">
+                            <div id="progress-bar-container">
+                                <div id="progress-bar-fill"></div>
+                            </div>
+                            <div id="progress-text">Ionization in progress...</div>
+                        </div>
                         <div class="animation-controls">
-                            <button id="step-by-step-toggle" title="Step-by-Step Mode">
-                                <i class="fas fa-shoe-prints"></i> Step-by-Step
-                            </button>
-                            <button id="next-step" title="Next Step" disabled>
-                                <i class="fas fa-step-forward"></i> Next
-                            </button>
                             <button id="zoom-in" title="Zoom In">
                                 <i class="fas fa-search-plus"></i>
                             </button>
@@ -132,34 +132,41 @@
         
         <div class="tab-content" id="guide-tab">
             <div class="guide-content">
-                <h3>How to Read the Atom View</h3>
+                <h3>How Ions Form</h3>
                 <div class="guide-grid">
                     <div class="guide-item">
                         <div class="guide-icon nucleus-icon"></div>
                         <div class="guide-text">
                             <h4>Nucleus</h4>
-                            <p>The center of the atom where protons and neutrons live!</p>
+                            <p>The center of the atom that stays the same during ion formation. It contains protons (+) and neutrons.</p>
                         </div>
                     </div>
                     <div class="guide-item">
                         <div class="guide-icon shell-icon"></div>
                         <div class="guide-text">
-                            <h4>Shells</h4>
-                            <p>Colored rings where electrons orbit - each shell can only hold so many electrons.</p>
+                            <h4>Electron Shells</h4>
+                            <p>Regions where electrons orbit. The outer shell is where electrons are gained or lost during ion formation.</p>
                         </div>
                     </div>
                     <div class="guide-item">
                         <div class="guide-icon electron-icon"></div>
                         <div class="guide-text">
                             <h4>Electrons</h4>
-                            <p>Tiny particles that buzz around the nucleus. When atoms share or trade them, they form ions!</p>
+                            <p>When atoms gain or lose electrons, they become ions with a negative or positive charge.</p>
                         </div>
                     </div>
                     <div class="guide-item">
-                        <div class="guide-icon charge-icon"></div>
+                        <div class="guide-icon positive-icon"></div>
                         <div class="guide-text">
-                            <h4>Charge</h4>
-                            <p>The + or - signs show if the atom lost or gained electrons.</p>
+                            <h4>Cations (+)</h4>
+                            <p>When an atom loses electrons, it has more protons than electrons, creating a positive charge.</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <div class="guide-icon negative-icon"></div>
+                        <div class="guide-text">
+                            <h4>Anions (-)</h4>
+                            <p>When an atom gains electrons, it has more electrons than protons, creating a negative charge.</p>
                         </div>
                     </div>
                 </div>
@@ -171,23 +178,31 @@
                 <h3>Fun Facts About Ions</h3>
                 <div class="fun-fact">
                     <i class="fas fa-bolt fact-icon"></i>
-                    <p>Ions are atoms that have gained or lost electrons. It's like having too many or too few friends at a party!</p>
+                    <p>The word "ion" comes from the Greek word meaning "to go," because ions move toward oppositely charged electrodes.</p>
                 </div>
                 <div class="fun-fact">
                     <i class="fas fa-plus-circle fact-icon"></i>
-                    <p><strong>Cations</strong> lose electrons and become positively charged. They're like atoms that gave away some presents.</p>
+                    <p><strong>Cations</strong> (positive ions) are usually formed by metals. They've lost electrons, making them smaller than their neutral atoms!</p>
                 </div>
                 <div class="fun-fact">
                     <i class="fas fa-minus-circle fact-icon"></i>
-                    <p><strong>Anions</strong> gain electrons and become negatively charged. They're like atoms that received extra gifts!</p>
+                    <p><strong>Anions</strong> (negative ions) are usually formed by non-metals. They've gained electrons, making them larger than their neutral atoms!</p>
                 </div>
                 <div class="fun-fact">
-                    <i class="fas fa-star fact-icon"></i>
-                    <p>Atoms form ions to have full outer shells. It's like trying to complete a sticker collection!</p>
+                    <i class="fas fa-heart fact-icon"></i>
+                    <p>Your body uses many ions like Na+, K+, Ca2+, and Cl- for nerve signals, muscle movement, and heart beating!</p>
                 </div>
                 <div class="fun-fact">
                     <i class="fas fa-utensils fact-icon"></i>
-                    <p>The salt on your food (NaCl) is made of sodium and chloride ions stuck together!</p>
+                    <p>Table salt (NaCl) is made from Na+ and Cl- ions attracted to each other. Most ionic compounds form when metals and non-metals exchange electrons!</p>
+                </div>
+                <div class="fun-fact">
+                    <i class="fas fa-tint fact-icon"></i>
+                    <p>Ions in water can conduct electricity! That's why pure water doesn't conduct electricity well, but salt water does!</p>
+                </div>
+                <div class="fun-fact">
+                    <i class="fas fa-sun fact-icon"></i>
+                    <p>The Northern Lights (Aurora Borealis) happen when the Sun sends charged particles (ions) that collide with Earth's atmosphere!</p>
                 </div>
             </div>
         </div>

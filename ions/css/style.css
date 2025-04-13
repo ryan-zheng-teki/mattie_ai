@@ -184,17 +184,30 @@ button:disabled {
     background-color: #e91e63;
 }
 
-.toggle-button {
-    background-color: var(--primary-dark);
+.processing-button {
+    background-color: #f57c00; /* Orange color to indicate processing */
     color: var(--text-light);
+    font-weight: bold;
+    padding: 10px 20px;
+    position: relative;
+    overflow: hidden;
 }
 
-.toggle-button.active {
-    background-color: var(--accent-color);
+.processing-button::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    background-color: rgba(255, 255, 255, 0.3);
+    animation: button-progress 2s linear infinite;
 }
 
-.toggle-button:hover {
-    background-color: #3949ab;
+@keyframes button-progress {
+    0% { width: 0; }
+    50% { width: 100%; }
+    100% { width: 0; }
 }
 
 /* Tabs */
@@ -314,6 +327,49 @@ button:disabled {
     z-index: 3;
 }
 
+/* Progress Indicator - Simplified */
+#progress-indicator {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 400px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 20px;
+    padding: 10px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 20;
+}
+
+#progress-bar-container {
+    width: 100%;
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+#progress-bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0%;
+    background-color: var(--accent-color);
+    transition: width 0.2s linear;
+}
+
+#progress-text {
+    margin-top: 8px;
+    color: white;
+    font-size: 14px;
+    text-align: center;
+}
+
 .animation-controls {
     position: absolute;
     right: 10px;
@@ -336,12 +392,6 @@ button:disabled {
     justify-content: center;
     font-size: 16px;
     transition: all 0.2s;
-}
-
-#step-by-step-toggle, #next-step {
-    width: auto;
-    border-radius: 20px;
-    padding: 8px 12px;
 }
 
 /* Explanation Panel Styles */
@@ -465,6 +515,21 @@ canvas {
     display: block;
     width: 100%;
     height: 100%;
+}
+
+/* Enhanced Electron Animations */
+.electron-highlight {
+    position: absolute;
+    border-radius: 50%;
+    box-shadow: 0 0 15px 5px #ff4444;
+    pointer-events: none;
+    z-index: 4;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.electron-highlight.gaining {
+    box-shadow: 0 0 15px 5px #44aaff;
 }
 
 /* Guide Tab */
@@ -697,9 +762,5 @@ canvas {
         width: 36px;
         height: 36px;
         font-size: 14px;
-    }
-    
-    #step-by-step-toggle, #next-step {
-        width: auto;
     }
 }

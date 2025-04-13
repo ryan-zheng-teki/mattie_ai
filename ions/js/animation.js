@@ -1,401 +1,71 @@
 import * as THREE from 'three';
 import TWEEN from 'tween';
-import { elements, elementRequiresElectronGain, SHELL_RADIUS_BASE, SHELL_RADIUS_INCREMENT, ELECTRON_COLORS, ELECTRON_RADIUS } from './elements-data.js';
+import { elements, elementRequiresElectronGain, SHELL_RADIUS_BASE, SHELL_RADIUS_INCREMENT, ELECTRON_COLORS, ELECTRON_RADIUS, CHILD_FRIENDLY_DESCRIPTIONS } from './elements-data.js';
 import { getCurrentAtomGroup, getElectrons, getSceneAndCamera, updateVisualization } from './visualization.js';
 import { showTemporaryLabel, showNarration, updateExplanationBox, getUIState } from './ui.js';
 
 // Animation state variables
 export let animationInProgress = false;
-let isStepByStepMode = false;
-let stepsToAnimate = [];
-
-// Initialize animation controls
-export function initAnimationControls() {
-    document.getElementById('step-by-step-toggle').addEventListener('click', toggleStepByStepMode);
-    document.getElementById('next-step').addEventListener('click', nextAnimationStep);
-}
-
-// Toggle step-by-step animation mode
-export function toggleStepByStepMode() {
-    isStepByStepMode = !isStepByStepMode;
-    const button = document.getElementById('step-by-step-toggle');
-    const nextButton = document.getElementById('next-step');
-    
-    if (isStepByStepMode) {
-        button.classList.add('active');
-        nextButton.disabled = false;
-        showNarration("Step-by-step mode enabled! Click 'Next' to see each step.");
-    } else {
-        button.classList.remove('active');
-        nextButton.disabled = true;
-        showNarration("Normal animation mode enabled.");
-    }
-}
-
-// Proceed to next step in step-by-step animation
-export function nextAnimationStep() {
-    if (!isStepByStepMode || stepsToAnimate.length === 0) return;
-    
-    // Execute the next step
-    const nextStep = stepsToAnimate.shift();
-    nextStep();
-    
-    // Disable the next button if no more steps
-    if (stepsToAnimate.length === 0) {
-        document.getElementById('next-step').disabled = true;
-        // Reset after all steps are complete
-        setTimeout(() => {
-            animationInProgress = false;
-            document.getElementById('animate-button').disabled = false;
-            document.getElementById('state-select').value = 'ion';
-        }, 500);
-    }
-}
 
 // Start ionization animation
 export function animateIonization() {
     const { currentElement } = getUIState();
-    
-    if (animationInProgress || !currentElement) return;
+    if (!currentElement) return;
     
     const element = elements[currentElement];
-    if (!element || !element.ionizationAnimation) return;
+    if (!element) return;
     
+    // Don't allow animation if already in progress
+    if (animationInProgress) return;
+    
+    // Start animation
     animationInProgress = true;
-    document.getElementById('animate-button').disabled = true;
     
-    // Get the narration text for this element
-    const narrationText = element.neutralState.description || 
-        `Watch how ${element.name} changes to become stable!`;
+    // Update button state
+    const animateButton = document.getElementById('animate-button');
+    animateButton.disabled = true;
+    animateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ionizing...';
+    animateButton.className = 'processing-button';
     
-    // Show narration and update explanation
+    // Show progress indicator
+    const progressIndicator = document.getElementById('progress-indicator');
+    progressIndicator.style.display = 'flex';
+    
+    // Reset progress bar
+    const progressBarFill = document.getElementById('progress-bar-fill');
+    progressBarFill.style.width = '0%';
+    
+    // Update progress text
+    const progressText = document.getElementById('progress-text');
+    progressText.textContent = 'Ionization in progress...';
+    
+    // Get narration text
+    const narrationText = CHILD_FRIENDLY_DESCRIPTIONS[currentElement]?.animation || 
+                         `Watch how ${element.name} changes to become an ion!`;
+    
+    // Show narration
     showNarration(narrationText, 5000);
     updateExplanationBox(narrationText);
     
-    // Determine if we're showing electron loss or gain
+    // Determine if electron gain or loss
     const isElectronGain = elementRequiresElectronGain(currentElement);
     
-    if (isStepByStepMode) {
-        // Set up steps for step-by-step animation
-        setupStepByStepAnimation(isElectronGain, currentElement);
-        document.getElementById('next-step').disabled = false;
-    } else {
-        // Regular animation
-        if (isElectronGain) {
-            animateElectronGain(currentElement);
-        } else {
-            animateElectronLoss(currentElement);
-        }
-    }
-}
-
-// Set up step-by-step animation
-function setupStepByStepAnimation(isElectronGain, elementSymbol) {
-    stepsToAnimate = [];
-    const element = elements[elementSymbol];
-    
     if (isElectronGain) {
-        const neutralState = element.neutralState;
-        const ionState = element.ionState;
-        
-        // Calculate how many electrons to add
-        let electronsToAdd = 0;
-        for (let i = 0; i < ionState.electronsPerShell.length; i++) {
-            const neutralShell = neutralState.electronsPerShell[i] || 0;
-            const ionShell = ionState.electronsPerShell[i] || 0;
-            electronsToAdd += Math.max(0, ionShell - neutralShell);
-        }
-        
-        // Set up steps for electron gain
-        for (let i = 0; i < electronsToAdd; i++) {
-            stepsToAnimate.push(() => {
-                animateElectronGainStep(i + 1, electronsToAdd, elementSymbol);
-            });
-        }
-        
-        // Add final step to update visualization
-        stepsToAnimate.push(() => {
-            updateVisualization(elementSymbol, 'ion');
-            showNarration(`${element.name} is now stable with a full outer shell!`);
-            updateExplanationBox(`${element.name} has gained ${electronsToAdd} electron${electronsToAdd > 1 ? 's' : ''} and is now stable with a full outer shell.`);
-        });
+        // Animate electron gain
+        animateGainingElectrons(currentElement);
     } else {
-        const neutralState = element.neutralState;
-        const ionState = element.ionState;
-        
-        // Calculate how many electrons to remove
-        let electronsToRemove = 0;
-        for (let i = 0; i < neutralState.electronsPerShell.length; i++) {
-            const neutralShell = neutralState.electronsPerShell[i] || 0;
-            const ionShell = ionState.electronsPerShell[i] || 0;
-            electronsToRemove += Math.max(0, neutralShell - ionShell);
-        }
-        
-        // Set up steps for electron loss
-        for (let i = 0; i < electronsToRemove; i++) {
-            stepsToAnimate.push(() => {
-                animateElectronLossStep(i + 1, electronsToRemove, elementSymbol);
-            });
-        }
-        
-        // Add final step to update visualization
-        stepsToAnimate.push(() => {
-            updateVisualization(elementSymbol, 'ion');
-            showNarration(`${element.name} is now stable without those extra electrons!`);
-            updateExplanationBox(`${element.name} has lost ${electronsToRemove} electron${electronsToRemove > 1 ? 's' : ''} and is now stable.`);
-        });
+        // Animate electron loss
+        animateLosingElectrons(currentElement);
     }
 }
 
-// Animate a single step of electron loss
-function animateElectronLossStep(stepNumber, totalSteps, elementSymbol) {
+// Animate electron gain
+function animateGainingElectrons(elementSymbol) {
     const element = elements[elementSymbol];
-    const electrons = getElectrons();
-    const currentAtomGroup = getCurrentAtomGroup();
-    const { scene, camera, renderer } = getSceneAndCamera();
-    
-    const outerShellIndex = element.neutralState.electronsPerShell.length - 1;
-    const outerShellElectrons = electrons.filter(e => e.shellIndex === outerShellIndex);
-    
-    if (outerShellElectrons.length === 0) {
-        return;
-    }
-    
-    // Take one electron to animate
-    const electronToAnimate = outerShellElectrons[0];
-    electronToAnimate.isAnimating = true;
-    
-    // Step narration
-    const stepText = `Step ${stepNumber}: ${element.name} is giving away electron ${stepNumber} of ${totalSteps}!`;
-    showNarration(stepText);
-    updateExplanationBox(stepText);
-    
-    // Show temporary label near the electron
-    const canvasRect = renderer.domElement.getBoundingClientRect();
-    const screenPosition = getScreenPosition(electronToAnimate.mesh.position, camera, renderer);
-    
-    showTemporaryLabel('Electron leaving!',
-                      screenPosition.x + canvasRect.left,
-                      screenPosition.y + canvasRect.top,
-                      '#ff4444',
-                      2000);
-    
-    // Animate the electron moving away
-    const startPos = electronToAnimate.mesh.position.clone();
-    const direction = startPos.clone().normalize().multiplyScalar(15);
-    
-    // Add some randomization to make it look more natural
-    direction.x += (Math.random() - 0.5) * 5;
-    direction.y += (Math.random() - 0.5) * 5;
-    direction.z += (Math.random() - 0.5) * 5;
-    
-    const targetPos = startPos.clone().add(direction);
-    
-    new TWEEN.Tween(electronToAnimate.mesh.position)
-        .to(targetPos, 1500)
-        .easing(TWEEN.Easing.Quadratic.Out)
-        .onComplete(() => {
-            // Remove the electron
-            currentAtomGroup.remove(electronToAnimate.mesh);
-            if (electronToAnimate.mesh.geometry) electronToAnimate.mesh.geometry.dispose();
-            if (electronToAnimate.mesh.material) electronToAnimate.mesh.material.dispose();
-            
-            // Remove from electrons array
-            const index = electrons.indexOf(electronToAnimate);
-            if (index > -1) {
-                electrons.splice(index, 1);
-            }
-        }).start();
-}
-
-// Animate a single step of electron gain
-function animateElectronGainStep(stepNumber, totalSteps, elementSymbol) {
-    const element = elements[elementSymbol];
-    const electrons = getElectrons();
-    const currentAtomGroup = getCurrentAtomGroup();
-    const { scene, camera, renderer } = getSceneAndCamera();
-    
-    const targetShellIndex = element.neutralState.electronsPerShell.length - 1;
-    const targetRadius = SHELL_RADIUS_BASE + targetShellIndex * SHELL_RADIUS_INCREMENT;
-    const electronColor = ELECTRON_COLORS[targetShellIndex] || ELECTRON_COLORS[0];
-    
-    // Step narration
-    const stepText = `Step ${stepNumber}: ${element.name} is grabbing electron ${stepNumber} of ${totalSteps}!`;
-    showNarration(stepText);
-    updateExplanationBox(stepText);
-    
-    // Create a new electron
-    const electronGeometry = new THREE.SphereGeometry(ELECTRON_RADIUS, 16, 16);
-    const electronMaterial = new THREE.MeshPhongMaterial({ 
-        color: electronColor, 
-        emissive: electronColor, 
-        emissiveIntensity: 0.7
-    });
-    const electronMesh = new THREE.Mesh(electronGeometry, electronMaterial);
-    electronMesh.userData.isElectron = true;
-    electronMesh.userData.shellIndex = targetShellIndex;
-    
-    // Start from random position outside the atom
-    const randomDir = new THREE.Vector3(
-        Math.random() - 0.5,
-        Math.random() - 0.5,
-        Math.random() - 0.5
-    ).normalize().multiplyScalar(targetRadius * 3);
-    
-    electronMesh.position.copy(randomDir);
-    
-    const electronData = {
-        mesh: electronMesh,
-        shellIndex: targetShellIndex,
-        radius: targetRadius,
-        phi: Math.random() * Math.PI * 2,
-        theta: Math.PI * (0.2 + Math.random() * 0.6),
-        phiSpeed: 0.3 / (targetRadius || 1),
-        thetaSpeed: 0.3 * 0.7 / (targetRadius || 1),
-        isAnimating: true,
-        center: new THREE.Vector3(0, 0, 0),
-        color: electronColor
-    };
-    
-    electrons.push(electronData);
-    currentAtomGroup.add(electronMesh);
-    
-    // Show temporary label near the new electron
-    const canvasRect = renderer.domElement.getBoundingClientRect();
-    const screenPosition = getScreenPosition(electronMesh.position, camera, renderer);
-    
-    showTemporaryLabel('New electron!',
-                      screenPosition.x + canvasRect.left,
-                      screenPosition.y + canvasRect.top,
-                      '#44aaff',
-                      2000);
-    
-    // Calculate target position on the shell
-    const targetPos = new THREE.Vector3(
-        targetRadius * Math.sin(electronData.theta) * Math.cos(electronData.phi),
-        targetRadius * Math.sin(electronData.theta) * Math.sin(electronData.phi),
-        targetRadius * Math.cos(electronData.theta)
-    );
-    
-    // Animate the electron moving to the atom
-    new TWEEN.Tween(electronMesh.position)
-        .to(targetPos, 1500)
-        .easing(TWEEN.Easing.Quadratic.Out)
-        .onComplete(() => {
-            electronData.isAnimating = false;
-        }).start();
-}
-
-// Animate electron loss (for cations)
-function animateElectronLoss(elementSymbol) {
-    const element = elements[elementSymbol];
-    const electrons = getElectrons();
-    const currentAtomGroup = getCurrentAtomGroup();
-    const { scene, camera, renderer } = getSceneAndCamera();
-    
     const neutralState = element.neutralState;
     const ionState = element.ionState;
     
-    // Calculate how many electrons to remove
-    let electronsToRemove = 0;
-    for (let i = 0; i < neutralState.electronsPerShell.length; i++) {
-        const neutralShell = neutralState.electronsPerShell[i] || 0;
-        const ionShell = ionState.electronsPerShell[i] || 0;
-        electronsToRemove += Math.max(0, neutralShell - ionShell);
-    }
-    
-    // Find the electrons to animate (from outer shell)
-    const outerShellIndex = neutralState.electronsPerShell.length - 1;
-    const outerShellElectrons = electrons.filter(e => e.shellIndex === outerShellIndex);
-    
-    // If no electrons to animate, switch display directly
-    if (outerShellElectrons.length === 0 || electronsToRemove === 0) {
-        updateVisualization(elementSymbol, 'ion');
-        animationInProgress = false;
-        document.getElementById('animate-button').disabled = false;
-        return;
-    }
-    
-    // Mark electrons for animation
-    const electronsToAnimate = outerShellElectrons.slice(0, electronsToRemove);
-    electronsToAnimate.forEach(electron => {
-        electron.isAnimating = true;
-    });
-    
-    // Update narration during animation
-    const narrationText = `${element.name} is giving away ${electronsToRemove} electron${electronsToRemove > 1 ? 's' : ''}!`;
-    showNarration(narrationText);
-    updateExplanationBox(narrationText);
-    
-    let completedAnimations = 0;
-    
-    // Animate each electron moving away
-    electronsToAnimate.forEach((electron, index) => {
-        // Show temporary label near the electron
-        setTimeout(() => {
-            const canvasRect = renderer.domElement.getBoundingClientRect();
-            const screenPosition = getScreenPosition(electron.mesh.position, camera, renderer);
-            
-            showTemporaryLabel('Electron leaving!',
-                              screenPosition.x + canvasRect.left,
-                              screenPosition.y + canvasRect.top,
-                              '#ff4444',
-                              1500);
-        }, index * 300); // Stagger labels
-        
-        const startPos = electron.mesh.position.clone();
-        const direction = startPos.clone().normalize().multiplyScalar(15);
-        
-        // Add some randomization to make it look more natural
-        direction.x += (Math.random() - 0.5) * 5;
-        direction.y += (Math.random() - 0.5) * 5;
-        direction.z += (Math.random() - 0.5) * 5;
-        
-        const targetPos = startPos.clone().add(direction);
-        
-        // Stagger the animations slightly
-        setTimeout(() => {
-            new TWEEN.Tween(electron.mesh.position)
-                .to(targetPos, 1500)
-                .easing(TWEEN.Easing.Quadratic.Out)
-                .onComplete(() => {
-                    // Remove the electron
-                    currentAtomGroup.remove(electron.mesh);
-                    if (electron.mesh.geometry) electron.mesh.geometry.dispose();
-                    if (electron.mesh.material) electron.mesh.material.dispose();
-                    
-                    completedAnimations++;
-                    
-                    // When all animations are done, update to ion state
-                    if (completedAnimations === electronsToAnimate.length) {
-                        setTimeout(() => {
-                            updateVisualization(elementSymbol, 'ion');
-                            animationInProgress = false;
-                            document.getElementById('animate-button').disabled = false;
-                            document.getElementById('state-select').value = 'ion';
-                            
-                            // Show completion narration
-                            const completionText = `${element.name} is now stable without those extra electrons!`;
-                            showNarration(completionText);
-                            updateExplanationBox(completionText);
-                        }, 500);
-                    }
-                }).start();
-        }, index * 300); // Longer stagger for better visibility
-    });
-}
-
-// Animate electron gain (for anions)
-function animateElectronGain(elementSymbol) {
-    const element = elements[elementSymbol];
-    const electrons = getElectrons();
-    const currentAtomGroup = getCurrentAtomGroup();
-    const { scene, camera, renderer } = getSceneAndCamera();
-    
-    const neutralState = element.neutralState;
-    const ionState = element.ionState;
-    
-    // Calculate how many electrons to add
+    // Calculate electrons to add
     let electronsToAdd = 0;
     for (let i = 0; i < ionState.electronsPerShell.length; i++) {
         const neutralShell = neutralState.electronsPerShell[i] || 0;
@@ -403,118 +73,322 @@ function animateElectronGain(elementSymbol) {
         electronsToAdd += Math.max(0, ionShell - neutralShell);
     }
     
-    // If no electrons to add, switch display directly
     if (electronsToAdd === 0) {
-        updateVisualization(elementSymbol, 'ion');
-        animationInProgress = false;
-        document.getElementById('animate-button').disabled = false;
+        // No electrons to add, complete immediately
+        completeAnimation(elementSymbol);
         return;
     }
     
-    // Find the target shell (usually the outer shell)
+    // Target shell is usually the outer shell
     const targetShellIndex = neutralState.electronsPerShell.length - 1;
     const targetRadius = SHELL_RADIUS_BASE + targetShellIndex * SHELL_RADIUS_INCREMENT;
-    const electronColor = ELECTRON_COLORS[targetShellIndex] || ELECTRON_COLORS[0];
     
-    // Update narration during animation
-    const narrationText = `${element.name} is grabbing ${electronsToAdd} more electron${electronsToAdd > 1 ? 's' : ''}!`;
-    showNarration(narrationText);
-    updateExplanationBox(narrationText);
+    // Color for incoming electrons
+    const electronColor = 0x44aaff; // Blue for incoming
     
-    // Create incoming electrons
-    const incomingElectrons = [];
-    for (let i = 0; i < electronsToAdd; i++) {
-        const electronGeometry = new THREE.SphereGeometry(ELECTRON_RADIUS, 16, 16);
-        const electronMaterial = new THREE.MeshPhongMaterial({ 
-            color: electronColor, 
-            emissive: electronColor, 
-            emissiveIntensity: 0.7
-        });
-        const electronMesh = new THREE.Mesh(electronGeometry, electronMaterial);
-        electronMesh.userData.isElectron = true;
-        electronMesh.userData.shellIndex = targetShellIndex;
+    // Create and animate incoming electrons one by one
+    let completedCount = 0;
+    
+    function animateNextElectron(index) {
+        if (index >= electronsToAdd) {
+            // All electrons added, complete animation
+            setTimeout(() => {
+                completeAnimation(elementSymbol);
+            }, 500);
+            return;
+        }
         
-        // Start from random positions outside the atom
-        const randomDir = new THREE.Vector3(
-            Math.random() - 0.5,
-            Math.random() - 0.5,
-            Math.random() - 0.5
-        ).normalize().multiplyScalar(targetRadius * 3);
+        // Update progress
+        const progress = Math.round((index / electronsToAdd) * 100);
+        updateProgress(progress);
         
-        electronMesh.position.copy(randomDir);
+        // Create a new electron
+        const electron = createElectron(electronColor, targetShellIndex);
         
-        const electronData = {
-            mesh: electronMesh,
-            shellIndex: targetShellIndex,
-            radius: targetRadius,
-            phi: Math.random() * Math.PI * 2,
-            theta: Math.PI * (0.2 + Math.random() * 0.6),
-            phiSpeed: 0.3 / (targetRadius || 1),
-            thetaSpeed: 0.3 * 0.7 / (targetRadius || 1),
-            isAnimating: true,
-            center: new THREE.Vector3(0, 0, 0),
-            color: electronColor
-        };
+        // Position it outside the atom
+        electron.position.set(0, 10, 0); // Always start from top
         
-        incomingElectrons.push(electronData);
-        electrons.push(electronData);
-        currentAtomGroup.add(electronMesh);
+        // Add it to the scene
+        const currentAtomGroup = getCurrentAtomGroup();
+        currentAtomGroup.add(electron);
+        
+        // Show label
+        const { scene, camera, renderer } = getSceneAndCamera();
+        const screenPos = getScreenPosition(electron.position, camera, renderer);
+        const canvasRect = renderer.domElement.getBoundingClientRect();
+        
+        showTemporaryLabel("ELECTRON COMING IN!", 
+                          screenPos.x + canvasRect.left, 
+                          screenPos.y + canvasRect.top,
+                          "#44aaff",
+                          1500);
+        
+        // Add highlight effect
+        addElectronHighlight(electron, true);
+        
+        // Calculate final position on the target shell
+        const angle = (Math.PI * 2 * index) / electronsToAdd;
+        const finalX = targetRadius * Math.sin(angle);
+        const finalY = targetRadius * Math.cos(angle);
+        const finalZ = 0;
+        
+        // Animate the electron moving to the atom
+        new TWEEN.Tween(electron.position)
+            .to({ x: finalX, y: finalY, z: finalZ }, 1500)
+            .easing(TWEEN.Easing.Quadratic.Out)
+            .onComplete(() => {
+                completedCount++;
+                
+                // Update progress
+                const progress = Math.round((completedCount / electronsToAdd) * 100);
+                updateProgress(progress);
+                
+                // Continue with next electron
+                setTimeout(() => {
+                    animateNextElectron(index + 1);
+                }, 300);
+            })
+            .start();
     }
     
-    let completedAnimations = 0;
+    // Start the animation sequence
+    animateNextElectron(0);
+}
+
+// Animate electron loss
+function animateLosingElectrons(elementSymbol) {
+    const element = elements[elementSymbol];
+    const electrons = getElectrons();
+    const neutralState = element.neutralState;
+    const ionState = element.ionState;
     
-    // Animate each electron moving to the atom
-    incomingElectrons.forEach((electron, index) => {
-        // Show temporary label near the electron
-        setTimeout(() => {
-            const canvasRect = renderer.domElement.getBoundingClientRect();
-            const screenPosition = getScreenPosition(electron.mesh.position, camera, renderer);
-            
-            showTemporaryLabel('New electron!',
-                              screenPosition.x + canvasRect.left,
-                              screenPosition.y + canvasRect.top,
-                              '#44aaff',
-                              1500);
-        }, index * 300); // Stagger labels
+    // Calculate electrons to remove
+    let electronsToRemove = 0;
+    for (let i = 0; i < neutralState.electronsPerShell.length; i++) {
+        const neutralShell = neutralState.electronsPerShell[i] || 0;
+        const ionShell = ionState.electronsPerShell[i] || 0;
+        electronsToRemove += Math.max(0, neutralShell - ionShell);
+    }
+    
+    if (electronsToRemove === 0 || electrons.length === 0) {
+        // No electrons to remove, complete immediately
+        completeAnimation(elementSymbol);
+        return;
+    }
+    
+    // Find electrons in outer shell
+    const outerShellIndex = neutralState.electronsPerShell.length - 1;
+    const outerShellElectrons = electrons.filter(e => e.shellIndex === outerShellIndex);
+    
+    if (outerShellElectrons.length === 0) {
+        // No outer shell electrons, complete immediately
+        completeAnimation(elementSymbol);
+        return;
+    }
+    
+    // Take electrons to animate
+    const electronsToAnimate = outerShellElectrons.slice(0, electronsToRemove);
+    let completedCount = 0;
+    
+    // Animate electrons one by one
+    function animateNextElectron(index) {
+        if (index >= electronsToAnimate.length) {
+            // All electrons removed, complete animation
+            setTimeout(() => {
+                completeAnimation(elementSymbol);
+            }, 500);
+            return;
+        }
         
-        // Calculate target position on the shell
-        const targetPos = new THREE.Vector3(
-            targetRadius * Math.sin(electron.theta) * Math.cos(electron.phi),
-            targetRadius * Math.sin(electron.theta) * Math.sin(electron.phi),
-            targetRadius * Math.cos(electron.theta)
-        );
+        // Update progress
+        const progress = Math.round((index / electronsToAnimate.length) * 100);
+        updateProgress(progress);
         
-        // Stagger the animations slightly
-        setTimeout(() => {
-            new TWEEN.Tween(electron.mesh.position)
-                .to(targetPos, 1500)
-                .easing(TWEEN.Easing.Quadratic.Out)
-                .onComplete(() => {
-                    electron.isAnimating = false;
-                    completedAnimations++;
-                    
-                    // When all animations are done, update to ion state
-                    if (completedAnimations === incomingElectrons.length) {
-                        setTimeout(() => {
-                            updateVisualization(elementSymbol, 'ion');
-                            animationInProgress = false;
-                            document.getElementById('animate-button').disabled = false;
-                            document.getElementById('state-select').value = 'ion';
-                            
-                            // Show completion narration
-                            const completionText = `${element.name} is now stable with a full outer shell!`;
-                            showNarration(completionText);
-                            updateExplanationBox(completionText);
-                        }, 500);
-                    }
-                }).start();
-        }, index * 300); // Stagger start times
+        const electron = electronsToAnimate[index];
+        if (!electron || !electron.mesh) {
+            // Skip if electron not available
+            animateNextElectron(index + 1);
+            return;
+        }
+        
+        // Mark as animating
+        electron.isAnimating = true;
+        
+        // Highlight the electron
+        addElectronHighlight(electron.mesh, false);
+        
+        // Show label
+        const { camera, renderer } = getSceneAndCamera();
+        const screenPos = getScreenPosition(electron.mesh.position, camera, renderer);
+        const canvasRect = renderer.domElement.getBoundingClientRect();
+        
+        showTemporaryLabel("ELECTRON LEAVING!", 
+                          screenPos.x + canvasRect.left, 
+                          screenPos.y + canvasRect.top,
+                          "#ff4444",
+                          1500);
+        
+        // Calculate exit direction - always upward for visibility
+        const targetY = 15; // Move upward
+        const targetX = electron.mesh.position.x;
+        const targetZ = electron.mesh.position.z;
+        
+        // Animate the electron moving away
+        new TWEEN.Tween(electron.mesh.position)
+            .to({ x: targetX, y: targetY, z: targetZ }, 1500)
+            .easing(TWEEN.Easing.Quadratic.Out)
+            .onComplete(() => {
+                // Remove electron from scene
+                const currentAtomGroup = getCurrentAtomGroup();
+                currentAtomGroup.remove(electron.mesh);
+                
+                // Clean up resources
+                if (electron.mesh.geometry) electron.mesh.geometry.dispose();
+                if (electron.mesh.material) electron.mesh.material.dispose();
+                
+                // Remove from electrons array
+                const idx = electrons.indexOf(electron);
+                if (idx > -1) {
+                    electrons.splice(idx, 1);
+                }
+                
+                completedCount++;
+                
+                // Update progress
+                const progress = Math.round((completedCount / electronsToAnimate.length) * 100);
+                updateProgress(progress);
+                
+                // Continue with next electron
+                setTimeout(() => {
+                    animateNextElectron(index + 1);
+                }, 300);
+            })
+            .start();
+    }
+    
+    // Start the animation sequence
+    animateNextElectron(0);
+}
+
+// Complete the animation and update to ion state
+function completeAnimation(elementSymbol) {
+    // Update progress to 100%
+    updateProgress(100);
+    
+    // Update visualization to show ion state
+    updateVisualization(elementSymbol, 'ion');
+    
+    // Get completion text
+    const element = elements[elementSymbol];
+    const completionText = CHILD_FRIENDLY_DESCRIPTIONS[elementSymbol]?.ion || 
+                          `${element.name} is now a ${element.ionState.charge} ion!`;
+    
+    // Show completion narration
+    showNarration(completionText, 5000);
+    updateExplanationBox(completionText);
+    
+    // Hide progress after a moment
+    setTimeout(() => {
+        const progressIndicator = document.getElementById('progress-indicator');
+        progressIndicator.style.display = 'none';
+        
+        // Reset button
+        const animateButton = document.getElementById('animate-button');
+        animateButton.disabled = false;
+        animateButton.innerHTML = '<i class="fas fa-play-circle"></i> Show Ionization';
+        animateButton.className = 'primary-button';
+        
+        // Reset animation state
+        animationInProgress = false;
+    }, 1000);
+}
+
+// Update progress bar
+function updateProgress(percent) {
+    const progressBarFill = document.getElementById('progress-bar-fill');
+    const progressText = document.getElementById('progress-text');
+    
+    // Update progress bar width
+    progressBarFill.style.width = `${percent}%`;
+    
+    // Update text
+    if (percent < 100) {
+        progressText.textContent = `Ionization in progress... ${percent}%`;
+    } else {
+        progressText.textContent = 'Ionization complete!';
+    }
+}
+
+// Create a new electron mesh
+function createElectron(color, shellIndex) {
+    const geometry = new THREE.SphereGeometry(ELECTRON_RADIUS * 2, 16, 16);
+    const material = new THREE.MeshPhongMaterial({
+        color: color,
+        emissive: color,
+        emissiveIntensity: 1.5
     });
+    
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.userData.isElectron = true;
+    mesh.userData.shellIndex = shellIndex;
+    
+    return mesh;
+}
+
+// Add highlight effect around an electron
+function addElectronHighlight(electronMesh, isGaining) {
+    // Create highlight effect in DOM
+    const container = document.getElementById('visualization-container');
+    const { camera, renderer } = getSceneAndCamera();
+    
+    // Update highlight position every frame for a while
+    const updateInterval = setInterval(() => {
+        if (!electronMesh || !electronMesh.parent) {
+            clearInterval(updateInterval);
+            return;
+        }
+        
+        const screenPos = getScreenPosition(electronMesh.position, camera, renderer);
+        const canvasRect = renderer.domElement.getBoundingClientRect();
+        
+        // Create highlight if needed
+        if (!electronMesh.userData.highlight) {
+            const highlight = document.createElement('div');
+            highlight.className = `electron-highlight ${isGaining ? 'gaining' : ''}`;
+            highlight.style.width = '20px';
+            highlight.style.height = '20px';
+            highlight.style.position = 'absolute';
+            
+            container.appendChild(highlight);
+            electronMesh.userData.highlight = highlight;
+        }
+        
+        // Update position
+        const highlight = electronMesh.userData.highlight;
+        highlight.style.left = (screenPos.x + canvasRect.left - 10) + 'px';
+        highlight.style.top = (screenPos.y + canvasRect.top - 10) + 'px';
+    }, 16);
+    
+    // Remove highlight after animation
+    setTimeout(() => {
+        clearInterval(updateInterval);
+        if (electronMesh.userData.highlight) {
+            const highlight = electronMesh.userData.highlight;
+            if (highlight.parentNode) {
+                highlight.parentNode.removeChild(highlight);
+            }
+            electronMesh.userData.highlight = null;
+        }
+    }, 2000);
 }
 
 // Helper function to get screen position from 3D position
 function getScreenPosition(position, camera, renderer) {
-    const vector = new THREE.Vector3(position.x, position.y, position.z);
+    const vector = new THREE.Vector3(
+        position.x || 0, 
+        position.y || 0, 
+        position.z || 0
+    );
     vector.project(camera);
     
     const x = (vector.x * 0.5 + 0.5) * renderer.domElement.clientWidth;

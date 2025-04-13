@@ -66,8 +66,8 @@ export function initVisualization() {
     // Set up window resize handler
     window.addEventListener('resize', onWindowResize, false);
     
-    // Initialize speed setting from UI
-    updateElectronSpeed(document.getElementById('speed-control').value);
+    // Initialize speed setting using default value - FIX: Use the existing currentSpeedMultiplier instead of looking for a non-existent 'speed-control' element
+    updateElectronSpeed(currentSpeedMultiplier);
     
     console.log("Visualization initialization complete.");
 }

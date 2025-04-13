@@ -22,29 +22,29 @@ export const ELECTRON_COLORS = [
     0xffff70  // Brighter yellow (5th shell electrons)
 ];
 
-// Element colors by nucleus
+// Element colors by nucleus - all set to same grey color for consistency
 export const NUCLEUS_COLORS = {
-    H:  0xff5555, // Bright Red for Hydrogen
-    He: 0xffaa55, // Orange for Helium
-    Li: 0xff5533, // Red-Orange for Lithium
-    Be: 0x33ee77, // Green for Beryllium
-    B:  0xbb33ff, // Purple for Boron
-    C:  0x343434, // Dark Grey for Carbon
-    N:  0x55aaff, // Blue for Nitrogen
-    O:  0x33ccff, // Light Blue for Oxygen
-    F:  0x33ffcc, // Teal for Fluorine
-    Ne: 0xff55ff, // Pink for Neon
-    Na: 0xff8833, // Brighter Orange for Sodium
-    Mg: 0xffcc33, // Brighter Light Orange for Magnesium
-    Al: 0xeeeeee, // Brighter Silver for Aluminum
-    Si: 0x99bbaa, // Sage Green for Silicon
-    P:  0xff9933, // Orange for Phosphorus
-    S:  0xffff33, // Yellow for Sulfur
-    Cl: 0x33ee66, // Brighter Green for Chlorine
-    Ar: 0xaa55ff, // Purple for Argon
-    K:  0xffaa33, // Brighter Dark Orange for Potassium
-    Ca: 0xffee66, // Brighter Yellow for Calcium
-    default: 0xaaaaaa // Brighter Grey default
+    H:  0x808080, // Grey for Hydrogen
+    He: 0x808080, // Grey for Helium
+    Li: 0x808080, // Grey for Lithium
+    Be: 0x808080, // Grey for Beryllium
+    B:  0x808080, // Grey for Boron
+    C:  0x808080, // Grey for Carbon
+    N:  0x808080, // Grey for Nitrogen
+    O:  0x808080, // Grey for Oxygen
+    F:  0x808080, // Grey for Fluorine
+    Ne: 0x808080, // Grey for Neon
+    Na: 0x808080, // Grey for Sodium
+    Mg: 0x808080, // Grey for Magnesium
+    Al: 0x808080, // Grey for Aluminum
+    Si: 0x808080, // Grey for Silicon
+    P:  0x808080, // Grey for Phosphorus
+    S:  0x808080, // Grey for Sulfur
+    Cl: 0x808080, // Grey for Chlorine
+    Ar: 0x808080, // Grey for Argon
+    K:  0x808080, // Grey for Potassium
+    Ca: 0x808080, // Grey for Calcium
+    default: 0x808080 // Grey default
 };
 
 // Child-friendly explanations for elements

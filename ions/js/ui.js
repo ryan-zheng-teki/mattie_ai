@@ -5,9 +5,7 @@ import { updateVisualization, updateElectronSpeed } from './visualization.js';
 import { animateIonization } from './animation.js';
 
 // Global state
-let isMinimalView = true;
 let currentElement = null;
-let currentState = 'neutral';
 let narrationTimeout = null;
 let electronSpeed = 0.1; // Default electron speed - reduced from 0.3 to 0.1
 
@@ -19,13 +17,9 @@ export function initUI() {
     // Set up quiz functionality
     setupQuiz();
     
-    // Set up minimal view toggle
-    setupViewToggle();
-    
     // Set up event listeners for visualization controls
     document.getElementById('element-select').addEventListener('change', onElementChange);
-    document.getElementById('state-select').addEventListener('change', onStateChange);
-    document.getElementById('animate-button').addEventListener('click', () => animateIonization());
+    document.getElementById('animate-button').addEventListener('click', animateIonization);
     
     // Set up speed control
     setupSpeedControl();
@@ -130,30 +124,6 @@ function loadRandomQuestion() {
     });
 }
 
-// Set up minimal view toggle
-function setupViewToggle() {
-    const toggleButton = document.getElementById('view-toggle');
-    const toggleText = document.getElementById('view-mode-text');
-    
-    toggleButton.addEventListener('click', () => {
-        isMinimalView = !isMinimalView;
-        toggleButton.classList.toggle('active');
-        
-        if (isMinimalView) {
-            toggleText.textContent = 'Simple View';
-            document.body.classList.add('minimal-view');
-        } else {
-            toggleText.textContent = 'Detailed View';
-            document.body.classList.remove('minimal-view');
-        }
-        
-        // Update the visualization with current settings
-        if (currentElement) {
-            updateVisualization(currentElement, currentState);
-        }
-    });
-}
-
 // Set up hover tooltips for visualization elements
 function setupHoverTooltips() {
     // Create tooltip container once
@@ -201,14 +171,7 @@ function positionTooltip(event, tooltip) {
 export function onElementChange(event) {
     const selectedElement = event.target.value;
     currentElement = selectedElement;
-    updateVisualization(selectedElement, currentState);
-}
-
-// Handle state selection change
-export function onStateChange(event) {
-    const selectedState = event.target.value;
-    currentState = selectedState;
-    updateVisualization(currentElement, selectedState);
+    updateVisualization(selectedElement, 'neutral');
 }
 
 // Show temporary label in the visualization
@@ -222,6 +185,8 @@ export function showTemporaryLabel(text, x, y, color = '#ffffff', duration = 200
     label.style.color = color;
     label.style.left = x + 'px';
     label.style.top = y + 'px';
+    label.style.fontSize = '16px'; // Slightly larger
+    label.style.fontWeight = 'bold'; // Bolder
     
     // Add to container
     labelsContainer.appendChild(label);
@@ -315,9 +280,7 @@ export function updateShellStatus(electronsPerShell) {
 // Export the global state for access from other modules
 export function getUIState() {
     return {
-        isMinimalView,
         currentElement,
-        currentState,
         electronSpeed
     };
 }

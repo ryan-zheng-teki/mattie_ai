@@ -4,7 +4,8 @@ import TWEEN from 'tween';
 import { 
     NUCLEUS_RADIUS, ELECTRON_RADIUS, SHELL_RADIUS_BASE, SHELL_RADIUS_INCREMENT,
     ELECTRON_SPEED_MULTIPLIER, SHELL_COLORS, ELECTRON_COLORS, NUCLEUS_COLORS,
-    POSITIVE_INDICATOR_COLOR, NEGATIVE_INDICATOR_COLOR, elements
+    POSITIVE_INDICATOR_COLOR, NEGATIVE_INDICATOR_COLOR, elements,
+    CHILD_FRIENDLY_DESCRIPTIONS
 } from './elements-data.js';
 import { showTemporaryLabel, updateElementInfo, updateExplanationBox, updateShellStatus, getUIState } from './ui.js';
 
@@ -16,6 +17,8 @@ let nucleusObject = null;
 let chargeIndicator = null;
 export let isFullscreen = false;
 let currentSpeedMultiplier = 0.1; // Default speed setting - reduced from 0.3 to 0.1
+let currentElementSymbol = null;
+let currentStateType = 'neutral'; // Default is always neutral
 
 // Initialize the visualization scene
 export function initVisualization() {
@@ -97,6 +100,10 @@ export function createAtomVisualization(elementSymbol, stateType) {
         return;
     }
     
+    // Save current element and state
+    currentElementSymbol = elementSymbol;
+    currentStateType = stateType;
+    
     // Get the configuration for the requested state
     const configuration = stateType === 'neutral' ? element.neutralState : element.ionState;
     
@@ -151,13 +158,26 @@ export function createAtomVisualization(elementSymbol, stateType) {
     
     // Update information displays
     updateElementInfo(element, stateType);
-    updateExplanationBox(stateType === 'neutral' ? 
-                        element.neutralState.description || `This is a neutral ${element.name} atom` : 
-                        element.ionState.description || `This is a ${element.name} ion with a charge of ${element.ionState.charge}`);
+    
+    // Get child-friendly description for the current state
+    let explanationText = '';
+    if (stateType === 'neutral') {
+        explanationText = CHILD_FRIENDLY_DESCRIPTIONS[elementSymbol]?.neutral || 
+                         `This is a neutral ${element.name} atom with ${configuration.electronsPerShell.join(', ')} electrons in its shells.`;
+    } else {
+        explanationText = CHILD_FRIENDLY_DESCRIPTIONS[elementSymbol]?.ion || 
+                         element.ionState.description || 
+                         `This is a ${element.name} ion with a charge of ${element.ionState.charge}`;
+    }
+    
+    updateExplanationBox(explanationText);
     updateShellStatus(configuration.electronsPerShell);
     
     // Make objects hoverable
     makeObjectsHoverable();
+    
+    // Re-enable the animation button if the element can be ionized and we're in neutral state
+    document.getElementById('animate-button').disabled = (stateType === 'ion' || !element.ionizationAnimation);
 }
 
 // Create nucleus mesh
@@ -504,11 +524,15 @@ function onWindowResize() {
 export function updateVisualization(elementSymbol, stateType) {
     if (!elementSymbol) return;
     
+    // If a new element is selected, always reset to neutral state
+    if (elementSymbol !== currentElementSymbol) {
+        stateType = 'neutral';
+    }
+    
     createAtomVisualization(elementSymbol, stateType);
     
     // Update UI state
     document.getElementById('element-select').value = elementSymbol;
-    document.getElementById('state-select').value = stateType;
 }
 
 // Update electron positions for animation

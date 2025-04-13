@@ -6,7 +6,7 @@ import { updateVisualization, updateElectronSpeed } from './visualization.js';
 // Global state
 let currentElement = null;
 let narrationTimeout = null;
-let electronSpeed = 0.1; // Default electron speed - reduced from 0.3 to 0.1
+let electronSpeed = 0.05; // Default electron speed - set to slow default
 
 // Initialize UI components
 export function initUI() {
@@ -26,18 +26,35 @@ export function initUI() {
     setupHoverTooltips();
 }
 
-// Set up speed control
+// Set up speed control with two buttons
 function setupSpeedControl() {
-    const speedControl = document.getElementById('speed-control');
+    const slowSpeedBtn = document.getElementById('slow-speed');
+    const fastSpeedBtn = document.getElementById('fast-speed');
     
-    // Set initial value
-    speedControl.value = electronSpeed;
-    
-    // Add change event listener
-    speedControl.addEventListener('input', (e) => {
-        electronSpeed = parseFloat(e.target.value);
+    // Slow button click
+    slowSpeedBtn.addEventListener('click', () => {
+        // Remove active class from fast button
+        fastSpeedBtn.classList.remove('active');
+        // Add active class to slow button
+        slowSpeedBtn.classList.add('active');
+        // Set speed to slow value
+        electronSpeed = 0.05;
         updateElectronSpeed(electronSpeed);
     });
+    
+    // Fast button click
+    fastSpeedBtn.addEventListener('click', () => {
+        // Remove active class from slow button
+        slowSpeedBtn.classList.remove('active');
+        // Add active class to fast button
+        fastSpeedBtn.classList.add('active');
+        // Set speed to fast value
+        electronSpeed = 0.5;
+        updateElectronSpeed(electronSpeed);
+    });
+    
+    // Initialize with slow speed
+    updateElectronSpeed(electronSpeed);
 }
 
 // Set up tab navigation
